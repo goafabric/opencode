@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: library-service
+  description: Library Service for managing students, books, and book lendings
+  annotations:
+    github.com/project-slug: goafabric/library-service
+spec:
+  type: service
+  lifecycle: experimental
+  owner: goafabric
