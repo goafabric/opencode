@@ -1,0 +1,21 @@
+apiVersion: 3.1.3
+kind: component
+metadata:
+  name: library-service
+  owner: team-library
+  systems: [library-management]
+  tags:
+    - kotlin
+    - spring-boot
+    - jpa
+  subcomponents:
+    - name: student-management
+      description: Manages students and their library memberships
+spec:
+  type: service
+  provider: library-platform
+  technologies:
+    - name: kotlin
+    - name: spring-boot
+    - name: kotlin-spring
+    - name: jpa

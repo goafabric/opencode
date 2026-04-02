@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":separateMajorAcross7"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*spring*"],
+      "schedule": ["before 6am on Sunday"]
+    },
+    {
+      "matchPackagePatterns": ["*kotlin*"],
+      "schedule": ["before 6am on Sunday"]
+    },
+    {
+      "matchPackageNames": ["org.springframework.boot:spring-boot-starter-web", "org.springframework.boot:spring-boot-starter-webflux"],
+      "enabled": true
+    },
+    {
+      "matchPackageNames": ["org.springframework.boot:spring-boot-starter-data-jpa"],
+      "enabled": true
+    },
+    {
+      "matchPackageNames": ["org.jetbrains.kotlin:*"],
+      "enabled": true
+    }
+  ],
+  "ignoreDeps": ["com.google.guava:guava"],
+  "semanticCommits": "enabled"
+}
