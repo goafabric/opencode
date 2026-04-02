@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:library-service
+    driver-class-name: org.h2.Driver
+    h2:
+      servlet:
+        path: /h2-console
+      web-allow-others: true
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    ddl-auto: update
+server:
+  port: 8080
