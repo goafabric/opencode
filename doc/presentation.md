@@ -1,6 +1,7 @@
 # intro
 
-- ollama can be download from the internet and is based on popular ollama cpp cli              
+- ollama can be download from the internet  
+- is based on popular ollama cpp cli              
 
 ollama ls
 
