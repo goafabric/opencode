@@ -9,14 +9,11 @@ This project serves as a **microservice template** within the *eden* platform, d
 - **Spring Boot 4.0.x** as the underlying framework
 - **Kotlin** as the primary language (JDK 25)
 - **Gradle (Kotlin DSL)** (`build.gradle.kts`) for the build process
-- **GitLab CI** (`.gitlab-ci.yml`) for CI/CD integration
 - **PostgreSQL** for production persistence, **H2** for development/test
 - **Apache Kafka** for event-driven messaging
 - **Gitignore File** (`.gitignore`) to specify which files should not be added to GIT
 
 This specification defines the technical blueprint covering the layered architecture, cross-cutting concerns (multi-tenancy, authorization, audit trail, event publishing), non-functional quality attributes, infrastructure, and enforced architecture rules. It deliberately excludes any business or domain-specific requirements.
-
-> **See also**: [NEW-SERVICE-INSTRUCTIONS.md](NEW-SERVICE-INSTRUCTIONS.md) for step-by-step guidance on creating a new service from this template, including the complete project structure, file-by-file instructions for what to copy and what to adapt, and a quick-start checklist.
 
 ---
 
