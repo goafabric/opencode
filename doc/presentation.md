@@ -86,8 +86,5 @@ ollama launch pi --config
 - explain to theoretically build an entire service with spring boot
 
 - explain the downside, e.g. missing planning tool that will divide the coding into multiple steps
-
-# building spring boot service with kotlin
-
-- pasting instructions
-- 
+         
+- explain context window config in ollam
