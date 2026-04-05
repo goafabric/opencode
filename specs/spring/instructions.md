@@ -8,3 +8,6 @@ please build me a service based on the scenario
 - so students that go to a library and can lend one or multiple books
 - create the project and its files in a subfolder ./library-service
 - it should be a complete service with jpa, controller, logic, persistence, repositories
+
+important note
+- always continue building the service, without asking the user for input
