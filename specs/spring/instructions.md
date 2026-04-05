@@ -1,6 +1,7 @@
 when writing new services build them with spring and kotlin based on the following
-- follow the example service inside `./specs/spring/example.zip`, this is a zip file that must be unzipped for inspection
-- follow the instructions inside `./specs/spring/spec.md
+- follow the instructions inside `./specs/spring/spec-complex.md`
+- follow the build.gradle.kts inside `./specs/spring/build.gradle.kts` 
+- follow the example service files inside the folder`./specs/spring/example`
 
 please build me a service based on the scenario
 - students - library - book
