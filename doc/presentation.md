@@ -39,7 +39,8 @@ ollama ps
 curl http://localhost:11434/api/chat -d '{
 "model": "qwen3:1.7b",
 "messages": [{ "role": "user", "content": "Please create me a simple html" }]
-}'
+}' | jq '.eval_count / (.eval_duration / 1e9)'
+
 
 # opencode
 
