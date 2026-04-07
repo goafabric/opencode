@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: library-service
+  description: "Library Service - Manages students, books, and loans"
+  tags:
+    - spring-boot
+    - kotlin
+    - microservice
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group-backend

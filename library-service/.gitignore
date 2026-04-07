@@ -1,0 +1,35 @@
+# Build outputs
+build/
+*.class
+*.jar
+*.war
+/doc/generated/
+
+# Gradle
+.gradle/
+gradlew
+gradlew.bat
+!gradlew
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test coverage
+build/reports/tests/
+coverage.xml
+coverage.csv
+
+# Kubernetes secrets
+*.key
+*.pem

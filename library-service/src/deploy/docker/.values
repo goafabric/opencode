@@ -1,0 +1,17 @@
+version: 0.1.0
+app: library-service
+image:
+  repository: goafabric/library-service
+  tag: 4.0.0-kotlin-SNAPSHOT
+replicaCount: 2
+
+service:
+  port: 50801
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: 512Mi
+  requests:
+    cpu: "100m"
+    memory: 256Mi
