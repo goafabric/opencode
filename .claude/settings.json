@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(./gradlew:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(docker push:*)",
+      "Bash(kubectl delete:*)",
+      "Read(/Users/andreas/**)",
+      "Write(/Users/andreas/**)",
+      "Edit(/Users/andreas/**)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git reset:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f ./gradlew ]; then ./gradlew test || exit 2; fi",
+            "asyncRewake": true,
+            "rewakeMessage": "Gradle tests failed:",
+            "statusMessage": "Running ./gradlew test...",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}
