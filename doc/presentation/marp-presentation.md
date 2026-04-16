@@ -898,6 +898,14 @@ Building a Laboratory Observation Service with Quarkus
 
 ---
 
+<!-- slide-id: obs-service-diagram -->
+
+## Scenario 1 — Observation Service
+
+![center w:900](observation-service.png)
+
+---
+
 <!-- slide-id: 1390dcac-dbee-4041-9951-95f61a630889 -->
 
 <!-- _class: bg-gradient -->
