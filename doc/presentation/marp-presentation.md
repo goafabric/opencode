@@ -787,7 +787,7 @@ agent.md · Hooks · Permissions · Agents · Skills · Slash Commands · MCP</p
 
 <!-- _class: bg-gradient -->
 
-![bg left:50%](/Users/andreas/IdeaProjects/xplayground/observation-service-ai/doc/presentation/homer-agent.png)
+![bg left:50%](./homer-agent.png)
 
 ## Demo
 
