@@ -902,7 +902,7 @@ Building a Laboratory Observation Service with Quarkus
 
 ## Scenario 1 — Observation Service
 
-![center w:900](observation-service.png)
+![center w:1200](observation-service.png)
 
 ---
 
