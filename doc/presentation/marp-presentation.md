@@ -984,5 +984,4 @@ Spring Boot → Quarkus Migration
 
 → Final tests and edge cases still need manual human-in-the-loop fixes
 
-👀 The more reference material you provide, the better the result</p>
 </div>
