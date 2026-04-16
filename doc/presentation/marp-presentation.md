@@ -815,39 +815,6 @@ Building a Laboratory Observation Service with Quarkus
 
 ---
 
-<!-- slide-id: 679da613-98aa-4367-8b5c-bdd9ea5136d7 -->
-
-## Scenario 1 — Approach
-
-<div class="process-steps">
-<div class="process-step">
-<div class="process-step-number">1</div>
-<div class="process-step-label">Pick Model</div>
-</div>
-<div class="process-arrow">→</div>
-<div class="process-step">
-<div class="process-step-number">2</div>
-<div class="process-step-label">Create /specs</div>
-</div>
-<div class="process-arrow">→</div>
-<div class="process-step">
-<div class="process-step-number">3</div>
-<div class="process-step-label">Add Requirements</div>
-</div>
-<div class="process-arrow">→</div>
-<div class="process-step">
-<div class="process-step-number">4</div>
-<div class="process-step-label">PLAN.md First</div>
-</div>
-<div class="process-arrow">→</div>
-<div class="process-step">
-<div class="process-step-number">5</div>
-<div class="process-step-label">Iterate</div>
-</div>
-</div>
-
----
-
 <!-- slide-id: 91cc3acd-9f3c-4340-ac59-eca0b0e3964c -->
 
 ## Scenario 1 — Approach Details
@@ -969,7 +936,7 @@ Spring Boot → Quarkus Migration
 <ul>
 <li>Code conversion worked</li>
 <li>Tests failed repeatedly</li>
-<li>Paused after 60 mins without success</li>
+<li>Success after several round trips and approx 2h-3h</li>
 </ul>
 </div>
 </div>
