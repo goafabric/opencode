@@ -3,6 +3,7 @@ https://www.thoughtworks.com/de-de/radar
 
 
 # Adopt - What we are already using
+- 3. Dora Metrics (https://dora.dev/quickcheck)
 - 43. Apisix
 - 69. Kafbat UI
 - 100. ReactJS
@@ -17,7 +18,6 @@ https://www.thoughtworks.com/de-de/radar
 - 91. Pi
 
 # Assess - What we could use
-- 3. Dora Metrics (https://dora.dev/quickcheck)
 - 13. Sandboxed execution of coding agents (e.g. nanoclaw)
 - 11. Mutation testing (validation of ai generated tests)
 - 29. Small language models
