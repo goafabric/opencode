@@ -1,6 +1,7 @@
 # div
 - Nanoclaw, n8n
 - Obsidian
+- warp
 
 - mcp server with typescript or quarkus or: https://github.com/langchain4j/langchain4j/commit/289741120365035818bf82530f6224cc735444b1
 - mcp integration
