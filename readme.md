@@ -1,4 +1,6 @@
-# launch
+# launch opencode
 ollama launch opencode --config
 
-https://github.com/p-lemonish/ollama-x-opencode
+# launch claude
+export CLAUDE_CODE_USE_FOUNDRY=0 && ollama launch claude --config
+
