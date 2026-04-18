@@ -10,5 +10,5 @@
 - ml learning: https://tribuo.org/
                             
 # checked
-- Obsidian
+- obsidian
 - warp
