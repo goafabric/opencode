@@ -22,7 +22,6 @@ https://www.thoughtworks.com/de-de/radar
 - 11. Mutation testing (validation of ai generated tests)
 - 29. Small language models
 - 84. GIT AI (track AI code)
-- 95. Warp
 - 115. Superpowers
 - 118. Unsloth
 
@@ -30,3 +29,6 @@ https://www.thoughtworks.com/de-de/radar
 - 34. Agent instruction bloat
 - 36. Codebase cognitive debt (tech debt from ai gen code)
 - 97. OpenClaw
+                 
+# removed
+- 95. Warp
