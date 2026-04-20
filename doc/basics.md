@@ -9,11 +9,15 @@ very generic termin that can mean a lot of different things
 ## machine learning
 - discipline in the field of ai of training and creating (large language) models with training data
 
-# #large language model (LLM)
+## large language model (LLM)
 - a computational model designed to perform natural language processing tasks
 - pretrained by data provided via MACHINE LEARNING
 - basically returns results based on the statistically most propable matching result between input and training data
 - if there is no training data, models can start to hallucinate
+                                                                     
+## small language model (SLM)
+- similar to LLMs just trained with much less data, so they can be executed on local hardware
+- usually less powerfull then LLMs in the cloud aka "frontier models"
 
 ## context window
 - information provided to the LLM
