@@ -24,7 +24,7 @@ very generic termin that can mean a lot of different things
 - usually consists of system prompt, tools, local code base
 - context window is limited, will fill up over time, which can lead to context exhaustion
   
-# skills and tools (mostly markdown sold like snake oil)
+# skills and tools (mostly markdown files - sold like wildfire snake oil)
           
 ## skill
 - basically a markdown file describing additional functionality
