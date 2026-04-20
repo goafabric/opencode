@@ -3,11 +3,17 @@
 very generic termin that can mean a lot of different things
 
 - machine learning
+- reinforcement learning
 - usage of LLMs to generate code
 - usage of LLMs inside code
 
 ## machine learning
 - discipline in the field of ai of training and creating (large language) models with training data
+
+## reinforcement learning
+- discipline in the field of ai where the model "trains itself" by executing tasks with a reward / penalty system to figure out an optimal strategy
+- simple example : super mario, reward: collecting coins, shortest time, penalty: "death"
+- complex example : training autonomous driving or robotic movement in a virtual environment
 
 ## large language model (LLM)
 - a computational model designed to perform natural language processing tasks
