@@ -24,7 +24,10 @@ very generic termin that can mean a lot of different things
           
 ## skill
 - basically a markdown file describing additional functionality
-                           
+
+## command
+- basically a skill that can be executed via "/command"
+
 ## agent.md
 - basically a markdown file describing a specific behaviour
 
