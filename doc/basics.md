@@ -48,6 +48,7 @@ very generic termin that can mean a lot of different things
 - options: claude code, opencode, codex
 - how they work: 
   - often a bunch of typescript code, essentially doing rest calls against the LLM
-  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW
+  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW, and that's the main difference between all of them
+
 
 
