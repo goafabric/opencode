@@ -1,13 +1,13 @@
+# service setup
 when writing new services build them with spring and kotlin based on the following
-- follow the instructions inside `./specs/spring/spec-simple.md`
 - follow the build.gradle.kts inside `./specs/spring/build.gradle.kts` 
-- follow the example service files inside the folder`./specs/spring/example`
+- follow the example service files inside the zipped file, which needs to be unzipped `./specs/spring/example.zip`
+                                                                       
+# requirements
+- follow technical requirements inside `./specs/spring/technical-requirements.md`
+- follow the requirements inside `./specs/spring/functional-requirements.md`
 
-please build me a service based on the scenario
-- students - library - book
-- so students that go to a library and can lend one or multiple books
-- create the project and its files in a subfolder ./library-service
-- it should be a complete service with jpa, controller, logic, persistence, repositories
-
-important note
-- always continue building the service, without asking the user for input
+# phased approach with PLAN.md
+- please create a PLAN.md upfront to separate the approach into multiple phases
+- this PLAN.md could be verified by the human in the loop upfront
+- it should also be possible to resume the code generation after a session was closed and restarted
