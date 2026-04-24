@@ -22,7 +22,6 @@ https://www.thoughtworks.com/de-de/radar
 - 11. Mutation testing (validation of ai generated tests)
 - 29. Small language models
 - 84. GIT AI (track AI code)
-- 115. Superpowers
 - 118. Unsloth
 
 # Caution - What we should not use
@@ -32,3 +31,4 @@ https://www.thoughtworks.com/de-de/radar
                  
 # removed
 - 95. Warp
+- 115. Superpowers
