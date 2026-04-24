@@ -1,6 +1,6 @@
 ## technical requirements
 
-- this is a supporting description of the example service files inside the zipped file, which needs to be unzipped `./specs/quarkus/example.zip`
+- this is a supporting description of the example service files inside the zipped file, which needs to be unzipped `./spec/quarkus/example.zip`
 
 ## 2 Build process
 - the build is based on gradle build.gradle.kts
