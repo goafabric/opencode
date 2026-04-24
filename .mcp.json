@@ -20,6 +20,10 @@
         "@masaki39/marp-mcp@latest"
       ],
       "env": {}
+    },
+    "callee": {
+      "type": "http",
+      "url": "http://localhost:50900/mcp"
     }
   }
 }
