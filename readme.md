@@ -6,4 +6,3 @@ ollama launch pi --config
 
 # launch claude
 export CLAUDE_CODE_USE_FOUNDRY=0 && ollama launch claude --config
-
