@@ -1,7 +1,6 @@
 # div
 - mcp server + mcp integration
-- model refinement (unsloth)
-- ml learning: https://tribuo.org/
+- ml learning: https://tribuo.org/, deep q learning, model refinement (unsloth)
                             
 # checked
 - obsidian, warp, pitest, sandbox : https://github.com/rogervinas/mutation-testing
