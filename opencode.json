@@ -5,6 +5,11 @@
       "type": "remote",
       "url": "http://localhost:50900/mcp",
       "enabled": true
+    },
+    "person": {
+      "type": "remote",
+      "url": "http://localhost:50800/mcp",
+      "enabled": true
     }
   }
 }
