@@ -10,6 +10,11 @@
       "type": "remote",
       "url": "http://localhost:50800/mcp",
       "enabled": true
+    },
+    "observation": {
+      "type": "remote",
+      "url": "http://localhost:50700/mcp",
+      "enabled": true
     }
   }
 }
