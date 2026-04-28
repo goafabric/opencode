@@ -18,7 +18,6 @@ https://www.thoughtworks.com/de-de/radar
 - 91. Pi
 
 # Assess - What we could use
-- 13. Sandboxed execution of coding agents (e.g. nanoclaw)
 - 11. Mutation testing (validation of ai generated tests)
 - 29. Small language models
 - 84. GIT AI (track AI code)
@@ -30,5 +29,7 @@ https://www.thoughtworks.com/de-de/radar
 - 97. OpenClaw
                  
 # removed
+- 13. Sandboxed execution of coding agents (e.g. nanoclaw)
 - 95. Warp
 - 115. Superpowers
+

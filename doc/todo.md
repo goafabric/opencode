@@ -1,10 +1,6 @@
 # div
-- Nanoclaw, n8n
-
-- mcp server with typescript or quarkus or: https://github.com/langchain4j/langchain4j/commit/289741120365035818bf82530f6224cc735444b1
-- mcp integration
-- model refinement (unsloth)
-- ml learning: https://tribuo.org/
+- mcp server + mcp integration
+- ml learning: https://tribuo.org/, deep q learning, model refinement (unsloth)
                             
 # checked
-- obsidian, warp, pitest : https://github.com/rogervinas/mutation-testing
+- obsidian, warp, pitest, sandbox : https://github.com/rogervinas/mutation-testing
