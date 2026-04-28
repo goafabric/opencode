@@ -11,16 +11,7 @@
       "args": [
         "@modelcontextprotocol/server-everything"
       ]
-    },
-    "marp-mcp": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@masaki39/marp-mcp@latest"
-      ],
-      "env": {}
-    },
+    }
     "callee": {
       "type": "http",
       "url": "http://localhost:50900/mcp"
