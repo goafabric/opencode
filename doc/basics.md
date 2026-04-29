@@ -46,7 +46,7 @@ very generic termin that can mean a lot of different things
 
 ## mcp server
 - a piece of code / deployable that adds additional functionality and provides them via a standardized MCP contract
-- can be called locally (e.g. npx -y) or remote (agent2agent)
+- can be called locally (e.g. npx -y) or remote (http)
 
 ## tools
 - additional context that can provide additional functionality to the LLM
