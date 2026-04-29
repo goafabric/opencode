@@ -58,7 +58,8 @@ very generic termin that can mean a lot of different things
 - options: claude code, opencode, codex, pi
 - how they work: 
   - often a bunch of typescript code, essentially doing rest calls against the LLM
-  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW, and that's the main difference between all of them
+  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW
+  - outcome depends on the model in use (1st) and the prompts and tools (2nd)
 
 ## coding desktop app
 - options: windsurf, copilot, claude desktop
