@@ -8,5 +8,5 @@ ollama launch pi --config
 export CLAUDE_CODE_USE_FOUNDRY=0 && ollama launch claude --config
 
 # opencode in container
-container run --cpus 6 --memory 1024m --rm --name opencode -v "$HOME/.config/opencode:/root/.config/opencode" -v "${PWD}:/workspace" \
--it openeuler/opencode:1.1.48-oe2403lts
+container run --cpus 6 --memory 1024m --rm --name opencode -v "$HOME/.config/opencode:/root/.config/opencode" -v "$HOME/.local/share/opencode:/root/.local/share/opencode" -v "${PWD}:/workspace" \
+-it ghcr.io/anomalyco/opencode:1.14.30
