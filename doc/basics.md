@@ -30,7 +30,7 @@ very generic termin that can mean a lot of different things
 - usually consists of system prompt, tools, local code base
 - context window is limited, will fill up over time, which can lead to context exhaustion
   
-# skills and tools (mostly markdown files - sold like wildfire snake oil)
+# skills and tools (mostly markdown files)
           
 ## skill
 - basically a markdown file describing additional functionality
@@ -46,19 +46,25 @@ very generic termin that can mean a lot of different things
 
 ## mcp server
 - a piece of code / deployable that adds additional functionality and provides them via a standardized MCP contract
-- can be called locally (e.g. npx -y) or remote (agent2agent)
+- can be called locally (e.g. npx -y) or remote (http)
 
 ## tools
 - additional context that can provide additional functionality to the LLM
 - often skills, mcp ....
            
-# coding
+# coding (aka harness)
 
 ## coding cli
-- options: claude code, opencode, codex
+- options: claude code, opencode, codex, pi
 - how they work: 
   - often a bunch of typescript code, essentially doing rest calls against the LLM
-  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW, and that's the main difference between all of them
+  - adding a system prompt and tools (e.g. read, write, bash) to the CONTEXT WINDOW
+  - outcome depends on the model in use (1st) and the prompts and tools (2nd)
 
+## coding desktop app
+- options: windsurf, copilot, claude desktop
+- how they work:
+  - essentially in the same way as coding cli
+  - just live inside your IDE as a plugin or inside their own IDE (often just a VSCode fork)
 
 
