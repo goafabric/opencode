@@ -38,7 +38,7 @@ Use the built-in Person MCP tools to manage person records.
 
 ### Search for a person
 1. Call `person_find` with `personSearch` containing at least one of `firstName` or `lastName`.
-2. Use `page: 1` and a reasonable `size` (e.g. `10`) to start.
+2. Use `page: 0` and a reasonable `size` (e.g. `10`) to start.
 3. Present the results to the user; paginate further if needed.
 
 ### Get a person by ID
@@ -59,5 +59,5 @@ Use the built-in Person MCP tools to manage person records.
 ## Notes
 
 - `version` is used for optimistic locking. Always read the latest record before saving to avoid version conflicts.
-- Pagination is (`page: 1` is the first page).
+- Pagination is (`page: 0` is the first page).
 - `address` is optional; a person can be saved without any addresses.
