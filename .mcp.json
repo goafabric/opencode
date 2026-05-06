@@ -11,7 +11,7 @@
       "args": [
         "@modelcontextprotocol/server-everything"
       ]
-    }
+    },
     "callee": {
       "type": "http",
       "url": "http://localhost:50900/mcp"
