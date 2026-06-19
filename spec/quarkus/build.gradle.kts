@@ -10,14 +10,14 @@ val dockerRegistry = "goafabric"
 plugins {
 	java
 	jacoco
-	id("io.quarkus") version "3.34.1"
+	id("io.quarkus") version "3.37.0"
 	id("net.researchgate.release") version "3.1.0"
-	id("org.sonarqube") version "7.2.3.7755"
+	id("org.sonarqube") version "7.3.1.8318"
 
-	kotlin("jvm") version "2.3.20"
-	kotlin("plugin.jpa") version "2.3.20"
-	kotlin("plugin.allopen") version "2.3.20"
-	kotlin("kapt") version "2.3.20"
+	kotlin("jvm") version "2.4.0"
+	kotlin("plugin.jpa") version "2.4.0"
+	kotlin("plugin.allopen") version "2.4.0"
+	kotlin("kapt") version "2.4.0"
 }
 
 repositories {
@@ -28,18 +28,18 @@ dependencies {
 	constraints {
 		annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 		implementation("org.mapstruct:mapstruct:1.6.3")
-		implementation("io.quarkiverse.azureservices:quarkus-azure-storage-blob:1.2.2")
+		implementation("io.quarkiverse.azureservices:quarkus-azure-storage-blob:1.2.4")
+		implementation("io.quarkiverse.mcp:quarkus-mcp-server-http:1.13.0")
 
 		kapt("org.mapstruct:mapstruct-processor:1.6.3")
-		kapt("org.hibernate.orm:hibernate-processor:7.2.8.Final")
 
 		testImplementation("org.assertj:assertj-core:3.27.7")
-		testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+		testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 		testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 	}
 
-	//kapt(enforcedPlatform("io.quarkus:quarkus-bom:3.34.1"))
-	implementation(enforcedPlatform("io.quarkus:quarkus-bom:3.34.1"))
+	kapt(enforcedPlatform("io.quarkus:quarkus-bom:3.37.0"))
+	implementation(enforcedPlatform("io.quarkus:quarkus-bom:3.37.0"))
 }
 dependencies {
 	//web
@@ -64,7 +64,7 @@ dependencies {
 	implementation("org.flywaydb:flyway-database-postgresql")
 
 	//jakarta data
-	implementation("io.quarkus:quarkus-hibernate-panache-next")
+	implementation("io.quarkus:quarkus-data-hibernate")
 	implementation("jakarta.data:jakarta.data-api")
 	kapt("org.hibernate.orm:hibernate-processor")
 
@@ -90,6 +90,9 @@ dependencies {
 	//blob
 	implementation("io.quarkiverse.azureservices:quarkus-azure-storage-blob")
 
+	//mcp
+	implementation("io.quarkiverse.mcp:quarkus-mcp-server-http") //https://docs.quarkiverse.io/quarkus-mcp-server/dev/guides-implementing-tools.html
+
 	//h2
 	runtimeOnly("com.h2database:h2")
 
@@ -105,6 +108,8 @@ dependencies {
 	testImplementation("io.quarkus:quarkus-junit-mockito")
 
 	testImplementation("io.quarkus:quarkus-test-kafka-companion")
+
+	testImplementation("org.testcontainers:testcontainers-postgresql")
 }
 
 tasks.withType<Test> {
@@ -113,6 +118,7 @@ tasks.withType<Test> {
 	systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
 	finalizedBy("jacocoTestReport")
 }
+
 
 tasks.jacocoTestReport {
 	executionData.setFrom(
@@ -163,3 +169,4 @@ sonarqube {
 tasks.matching { it.name == "checkSnapshotDependencies" }.configureEach {
 	enabled = false
 }
+

@@ -1,11 +1,11 @@
 # service setup
 when writing new services build them with quarkus and kotlin based on the following
-- follow the build.gradle.kts inside `./spec/quarkus/build.gradle.kts` 
-- follow the example service files inside the zipped file, which needs to be unzipped `./spec/quarkus/example.zip`
+- follow the build.gradle.kts inside `./doc/spec/quarkus/build.gradle.kts` 
+- follow the example service files inside the zipped file, which needs to be unzipped `./doc/spec/quarkus/example.zip`
                                                                        
 # requirements
-- follow technical requirements inside `./spec/quarkus/technical-requirements.md`
-- follow the requirements inside `./spec/quarkus/functional-requirements.md`
+- follow technical requirements inside `./doc/spec/quarkus/technical-requirements.md`
+- follow the requirements inside `./doc/spec/quarkus/functional-requirements.md`
 
 # phased approach with PLAN.md
 - please create a PLAN.md upfront to separate the approach into multiple phases
