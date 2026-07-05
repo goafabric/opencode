@@ -4,10 +4,10 @@
 
 ## 2 Build process
 - the build is based on gradle build.gradle.kts
-- the gradle version should be at least 9.2.1
-- new projects should be based on latest quarkus 3.34.1
+- the gradle version should be at least 9.5.1
+- new projects should be based on at least quarkus 3.37.0
 - the task "jibJvmImage" will build and push a jvm multi-arch image via jib
-- the task "nativeImage" will build and push a native image 
+- the task "nativeImage" will build and push a native image
 - for the remaining requirements please analyze build.gradle.kts
 
 ## 4 Renovate
@@ -18,7 +18,7 @@
 ## 5 Backstage
 
 - backstage integration is taken care if by "catalog-info.yaml" inside the main folder
-- this file should be adopted to new project requirements 
+- this file should be adopted to new project requirements
 
 ## 5 Project Architecture
 
@@ -41,13 +41,14 @@
 - persistence/entity contains the JPA entities
 - persistence, contains the repositories, these must be based on the new "PanacheRepository.Managed", for details: https://quarkus.io/version/main/guides/quarkus-data-hibernate
 - for persistence don't use the CrudRepository from Jakarta Data instead, as it has a stateless sessions with limitations
-- for persistence annotations from jakarta data are allowed however, for examples see the repositories inside example service 
+- for persistence annotations from jakarta data are allowed however, for examples see the repositories inside example service
 
 - classes inside the package controller/dto should NOT be suffixed with Dto, DTO, Result, Response - They should just have a simple name like Person, Address ..
 
 ### 5.1.2 http extensions
 - http extensions live inside the "extensions" and package
 - they take care for Exception Handling, retrieving Tenant Information via HttpInterceptor and KafkaInterceptor
+
 - All of these extensions should just be copied unmodified to new projects
 
 ### 5.1.3 persistence extensions
@@ -60,7 +61,7 @@
 ### 5.2 src/test
 - src/test should reflect the packages from src/main to implement tests
 - it contains archunit tests inside the package "architecture", which just should be copied over unmodified to new projects
-- it contains slower integration tests 
+- it contains slower integration tests
 - it also contains unit tests, where mockito is used when mocking of classes are required
 - integration tests and unit tests should be generated in a meaningful way, to allow for both fast builds and good code coverage
 - this is usually achieved by having integration tests take care of the happy path and a possible exceptions
