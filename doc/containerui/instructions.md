@@ -19,7 +19,7 @@
 - the UI should consist of a sidebar to the left, 
 - and views that show specific content to the right
 - the views could be seperated by "register cards"
-- please use a clean and simple lool
+- please use a clean and simple look, use fitting icons where meaningful
 
 ## sidebar ui
 - the sidebar should have these entries
