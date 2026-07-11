@@ -46,8 +46,8 @@ const ContainersView = (() => {
                 <td><span style="font-weight:500;">${App.escapeHtml(c.name || c.id.substring(0,12))}</span></td>
                 <td style="color:#6c757d; font-size:0.82rem;">${App.escapeHtml(c.image)}</td>
                 <td style="font-size:0.82rem;">${App.escapeHtml(c.ports || '—')}</td>
-                <td style="font-size:0.82rem; color:#adb5bd;">N/A</td>
-                <td style="font-size:0.82rem; color:#adb5bd;">N/A</td>
+                <td style="font-size:0.82rem;">${App.escapeHtml(c.cpuPercent || '—')}</td>
+                <td style="font-size:0.82rem;">${App.escapeHtml(c.memoryUsage || '—')}</td>
                 <td>${stateBadge(c.state)}</td>
                 <td onclick="event.stopPropagation()">${actionButtons(c)}</td>
             </tr>`;

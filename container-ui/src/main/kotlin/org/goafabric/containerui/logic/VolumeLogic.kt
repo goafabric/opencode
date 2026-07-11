@@ -2,53 +2,59 @@ package org.goafabric.containerui.logic
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.enterprise.context.ApplicationScoped
-import org.goafabric.containerui.adapter.DockerSocketAdapter
+import org.goafabric.containerui.adapter.AppleContainerAdapter
 import org.goafabric.containerui.controller.dto.Volume
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 @ApplicationScoped
-class VolumeLogic(private val dockerSocketAdapter: DockerSocketAdapter) {
+class VolumeLogic(private val adapter: AppleContainerAdapter) {
 
     fun listVolumes(): List<Volume> {
-        val json = dockerSocketAdapter.get("/volumes")
-        val response = dockerSocketAdapter.parse(json, DockerVolumesResponse::class.java)
+        val json = adapter.run("volume", "list", "--format", "json")
+        val raw = adapter.parseList(json, RawVolume::class.java)
 
-        return (response.Volumes ?: emptyList()).map { raw ->
+        return raw.map { vol ->
             Volume(
-                name = raw.Name ?: "",
-                created = formatTimestamp(raw.CreatedAt),
-                size = "–"  // Docker API does not always return size without df call
+                name = vol.configuration?.name ?: vol.id ?: "",
+                created = formatTimestamp(vol.configuration?.creationDate),
+                size = formatBytes(vol.configuration?.sizeInBytes ?: 0L)
             )
         }
     }
 
     fun deleteVolume(name: String) {
-        dockerSocketAdapter.delete("/volumes/$name")
+        adapter.run("volume", "delete", name)
     }
 
-    private fun formatTimestamp(isoTimestamp: String?): String {
-        if (isoTimestamp.isNullOrBlank()) return "–"
+    private fun formatTimestamp(iso: String?): String {
+        if (iso.isNullOrBlank()) return "–"
         return try {
-            val dt = OffsetDateTime.parse(isoTimestamp)
-            dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-        } catch (e: DateTimeParseException) {
-            isoTimestamp
+            OffsetDateTime.parse(iso).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        } catch (_: Exception) { iso }
+    }
+
+    private fun formatBytes(bytes: Long): String {
+        return when {
+            bytes >= 1_073_741_824 -> String.format("%.1f GB", bytes / 1_073_741_824.0)
+            bytes >= 1_048_576    -> String.format("%.1f MB", bytes / 1_048_576.0)
+            bytes >= 1_024        -> String.format("%.1f KB", bytes / 1_024.0)
+            else                  -> "$bytes B"
         }
     }
 
-    // --- Docker API raw models ---
+    // --- CLI JSON models ---
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class DockerVolumesResponse(
-        val Volumes: List<DockerVolume>? = null
+    data class RawVolume(
+        val id: String? = null,
+        val configuration: RawVolumeConfig? = null
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class DockerVolume(
-        val Name: String? = null,
-        val CreatedAt: String? = null,
-        val Mountpoint: String? = null
+    data class RawVolumeConfig(
+        val name: String? = null,
+        val creationDate: String? = null,
+        val sizeInBytes: Long? = null
     )
 }
