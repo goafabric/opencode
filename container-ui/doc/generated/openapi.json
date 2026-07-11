@@ -1,0 +1,348 @@
+{
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/api/containers" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Container"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "List Containers",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/containers/{id}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Delete Container",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/containers/{id}/logs" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ContainerLog"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Logs",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/containers/{id}/start" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Start Container",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/containers/{id}/stats" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ContainerStats"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get Stats",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/containers/{id}/stop" : {
+      "post" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Stop Container",
+        "tags" : [ "Container Controller" ]
+      }
+    },
+    "/api/images" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Image"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "List Images",
+        "tags" : [ "Image Controller" ]
+      }
+    },
+    "/api/images/{id}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Delete Image",
+        "tags" : [ "Image Controller" ]
+      }
+    },
+    "/api/volumes" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Volume"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "List Volumes",
+        "tags" : [ "Volume Controller" ]
+      }
+    },
+    "/api/volumes/{name}" : {
+      "delete" : {
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : { }
+              }
+            }
+          }
+        },
+        "summary" : "Delete Volume",
+        "tags" : [ "Volume Controller" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Container" : {
+        "type" : "object",
+        "required" : [ "id", "name", "image", "status", "state", "ports", "cpuPercent", "memoryUsage" ],
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "image" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "ports" : {
+            "type" : "string"
+          },
+          "cpuPercent" : {
+            "type" : "string"
+          },
+          "memoryUsage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ContainerLog" : {
+        "type" : "object",
+        "required" : [ "containerId", "logs" ],
+        "properties" : {
+          "containerId" : {
+            "type" : "string"
+          },
+          "logs" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ContainerStats" : {
+        "type" : "object",
+        "required" : [ "containerId", "cpuPercent", "memoryUsage" ],
+        "properties" : {
+          "containerId" : {
+            "type" : "string"
+          },
+          "cpuPercent" : {
+            "type" : "string"
+          },
+          "memoryUsage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Image" : {
+        "type" : "object",
+        "required" : [ "id", "name", "tag", "created", "size" ],
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "tag" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Volume" : {
+        "type" : "object",
+        "required" : [ "name", "created", "size" ],
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  },
+  "info" : {
+    "title" : "container-ui API",
+    "version" : "0.0.1-SNAPSHOT"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8081",
+    "description" : "Auto generated value"
+  }, {
+    "url" : "http://0.0.0.0:8081",
+    "description" : "Auto generated value"
+  } ]
+}

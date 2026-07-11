@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container UI</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        :root {
+            --sidebar-width: 220px;
+            --header-height: 52px;
+            --sidebar-bg: #1a1d21;
+            --sidebar-hover: #2a2d32;
+            --sidebar-active: #0d6efd;
+            --header-bg: #16191d;
+            --content-bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-muted-sidebar: #8a9ab0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--content-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Header ── */
+        #app-header {
+            height: var(--header-height);
+            background: var(--header-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        #app-header .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--sidebar-active);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #app-header .logo-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        #app-header h1 {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        #connection-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--text-muted-sidebar);
+        }
+
+        #connection-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6c757d;
+        }
+
+        #connection-status.connected .status-dot { background: #28a745; }
+        #connection-status.error .status-dot { background: #dc3545; }
+
+        /* ── Layout ── */
+        #app-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted-sidebar);
+            padding: 8px 18px 4px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 18px;
+            color: #c4cdd8;
+            cursor: pointer;
+            border-radius: 0;
+            text-decoration: none;
+            font-size: 0.87rem;
+            transition: background 0.15s, color 0.15s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+        }
+
+        .sidebar-item.active {
+            background: rgba(13, 110, 253, 0.15);
+            color: #ffffff;
+            border-left-color: var(--sidebar-active);
+        }
+
+        .sidebar-item svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        /* ── Main content ── */
+        #main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* ── Views ── */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .view-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a1d21;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .view-title svg {
+            width: 20px;
+            height: 20px;
+            color: var(--sidebar-active);
+        }
+
+        /* ── Tab cards (register cards) ── */
+        .tab-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .tab-card-header {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+            padding: 0 16px;
+        }
+
+        .tab-card-tab {
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6c757d;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .tab-card-tab.active {
+            color: var(--sidebar-active);
+            border-bottom-color: var(--sidebar-active);
+        }
+
+        .tab-card-body {
+            padding: 20px;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ── Table ── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 10px 14px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #6c757d;
+        }
+
+        .data-table td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #f0f2f5;
+            color: #2c3345;
+            vertical-align: middle;
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .data-table tr:hover td {
+            background: #f8f9fb;
+            cursor: pointer;
+        }
+
+        .data-table tr.no-hover:hover td {
+            background: transparent;
+            cursor: default;
+        }
+
+        /* ── State badges ── */
+        .badge-state {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-state.running { background: #d4edda; color: #155724; }
+        .badge-state.exited  { background: #f8d7da; color: #721c24; }
+        .badge-state.paused  { background: #fff3cd; color: #856404; }
+        .badge-state.created { background: #d1ecf1; color: #0c5460; }
+
+        .badge-state .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* ── Action buttons ── */
+        .btn-action {
+            border: none;
+            background: transparent;
+            padding: 5px 7px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #6c757d;
+            transition: background 0.15s, color 0.15s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-action:hover { background: #e9ecef; color: #343a40; }
+        .btn-action.start:hover { background: #d4edda; color: #155724; }
+        .btn-action.stop:hover  { background: #fff3cd; color: #856404; }
+        .btn-action.delete:hover { background: #f8d7da; color: #721c24; }
+
+        .btn-action svg { width: 15px; height: 15px; }
+
+        /* ── Log output ── */
+        #log-output {
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            padding: 16px;
+            border-radius: 6px;
+            height: 480px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ── Back button ── */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #495057;
+            margin-bottom: 18px;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .btn-back:hover { background: #f8f9fa; }
+        .btn-back svg { width: 14px; height: 14px; }
+
+        /* ── Loading / empty state ── */
+        .state-message {
+            text-align: center;
+            padding: 48px 24px;
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+        .state-message svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        /* ── Refresh button ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .btn-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.83rem;
+            cursor: pointer;
+            color: #495057;
+            transition: background 0.15s;
+        }
+
+        .btn-refresh:hover { background: #f1f3f5; }
+        .btn-refresh svg { width: 14px; height: 14px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header id="app-header">
+    <div class="logo-icon">
+        <!-- Container/box icon -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        </svg>
+    </div>
+    <h1>Container UI</h1>
+    <div id="connection-status">
+        <div class="status-dot"></div>
+        <span id="status-label">Connecting…</span>
+    </div>
+</header>
+
+<div id="app-body">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-section-label">Resources</div>
+        <div class="sidebar-item active" data-view="containers">
+            <!-- Box/container icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            Containers
+        </div>
+        <div class="sidebar-item" data-view="images">
+            <!-- Image/layers icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+            </svg>
+            Images
+        </div>
+        <div class="sidebar-item" data-view="volumes">
+            <!-- Database/volume icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+            Volumes
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main id="main-content">
+
+        <!-- Containers view -->
+        <div id="view-containers" class="view active">
+            <div class="toolbar">
+                <div class="view-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    Containers
+                </div>
+                <button class="btn-refresh" onclick="ContainersView.load()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="tab-card">
+                <div class="tab-card-header">
+                    <div class="tab-card-tab active">All Containers</div>
+                </div>
+                <div class="tab-card-body" style="padding: 0;">
+                    <div id="containers-content">
+                        <div class="state-message">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <div>Loading containers…</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container Detail view -->
+        <div id="view-container-detail" class="view">
+            <a class="btn-back" href="#" onclick="App.navigate('containers'); return false;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Back to Containers
+            </a>
+            <div class="view-title" id="detail-container-name">Container Detail</div>
+            <div class="tab-card">
+                <div class="tab-card-header">
+                    <div class="tab-card-tab active" data-tab="logs" onclick="ContainerDetail.switchTab('logs')">Logs</div>
+                </div>
+                <div class="tab-card-body">
+                    <div class="tab-pane active" id="tab-logs">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="font-size:0.82rem; color:#6c757d;">Last 500 lines</span>
+                            <button class="btn-refresh" onclick="ContainerDetail.loadLogs()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"/>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                        <pre id="log-output">Loading logs…</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images view -->
+        <div id="view-images" class="view">
+            <div class="toolbar">
+                <div class="view-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                    Images
+                </div>
+                <button class="btn-refresh" onclick="ImagesView.load()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="tab-card">
+                <div class="tab-card-header">
+                    <div class="tab-card-tab active">All Images</div>
+                </div>
+                <div class="tab-card-body" style="padding: 0;">
+                    <div id="images-content">
+                        <div class="state-message">Loading images…</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volumes view -->
+        <div id="view-volumes" class="view">
+            <div class="toolbar">
+                <div class="view-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                    </svg>
+                    Volumes
+                </div>
+                <button class="btn-refresh" onclick="VolumesView.load()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="tab-card">
+                <div class="tab-card-header">
+                    <div class="tab-card-tab active">All Volumes</div>
+                </div>
+                <div class="tab-card-body" style="padding: 0;">
+                    <div id="volumes-content">
+                        <div class="state-message">Loading volumes…</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/containers.js"></script>
+<script src="js/container-detail.js"></script>
+<script src="js/images.js"></script>
+<script src="js/volumes.js"></script>
+</body>
+</html>
