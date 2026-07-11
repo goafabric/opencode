@@ -1,8 +1,8 @@
 package org.goafabric.containerui.logic
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.enterprise.context.ApplicationScoped
 import org.goafabric.containerui.adapter.AppleContainerAdapter
+import org.goafabric.containerui.adapter.model.RawVolume
 import org.goafabric.containerui.controller.dto.Volume
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -23,9 +23,7 @@ class VolumeLogic(private val adapter: AppleContainerAdapter) {
         }
     }
 
-    fun deleteVolume(name: String) {
-        adapter.run("volume", "delete", name)
-    }
+    fun deleteVolume(name: String) { adapter.run("volume", "delete", name) }
 
     private fun formatTimestamp(iso: String?): String {
         if (iso.isNullOrBlank()) return "–"
@@ -34,27 +32,10 @@ class VolumeLogic(private val adapter: AppleContainerAdapter) {
         } catch (_: Exception) { iso }
     }
 
-    private fun formatBytes(bytes: Long): String {
-        return when {
-            bytes >= 1_073_741_824 -> String.format("%.1f GB", bytes / 1_073_741_824.0)
-            bytes >= 1_048_576    -> String.format("%.1f MB", bytes / 1_048_576.0)
-            bytes >= 1_024        -> String.format("%.1f KB", bytes / 1_024.0)
-            else                  -> "$bytes B"
-        }
+    private fun formatBytes(bytes: Long): String = when {
+        bytes >= 1_073_741_824 -> String.format("%.1f GB", bytes / 1_073_741_824.0)
+        bytes >= 1_048_576     -> String.format("%.1f MB", bytes / 1_048_576.0)
+        bytes >= 1_024         -> String.format("%.1f KB", bytes / 1_024.0)
+        else                   -> "$bytes B"
     }
-
-    // --- CLI JSON models ---
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class RawVolume(
-        val id: String? = null,
-        val configuration: RawVolumeConfig? = null
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class RawVolumeConfig(
-        val name: String? = null,
-        val creationDate: String? = null,
-        val sizeInBytes: Long? = null
-    )
 }

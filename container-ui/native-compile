@@ -1,0 +1,3 @@
+#!/bin/bash
+./gradlew clean buildNative
+open http://localhost:8081 && ./build/bay-*-runner

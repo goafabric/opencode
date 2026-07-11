@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import org.goafabric.containerui.controller.dto.Container
 import org.goafabric.containerui.controller.dto.ContainerLog
+import org.goafabric.containerui.controller.dto.ContainerStats
 import org.goafabric.containerui.logic.ContainerLogic
 
 @Path("/api/containers")
@@ -43,4 +44,9 @@ class ContainerController(private val containerLogic: ContainerLogic) {
         return containerLogic.getLogs(id)
     }
 
+    @GET
+    @Path("/stats")
+    fun fetchStats(): List<ContainerStats> {
+        return containerLogic.fetchStats()
+    }
 }

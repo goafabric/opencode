@@ -46,8 +46,8 @@ const ContainersView = (() => {
                 <td><span style="font-weight:500;">${App.escapeHtml(c.name || c.id.substring(0,12))}</span></td>
                 <td style="color:#6c757d; font-size:0.82rem;">${App.escapeHtml(c.image)}</td>
                 <td style="font-size:0.82rem;">${App.escapeHtml(c.ports || '—')}</td>
-                <td style="font-size:0.82rem;">${App.escapeHtml(c.cpuPercent || '—')}</td>
-                <td style="font-size:0.82rem;">${App.escapeHtml(c.memoryUsage || '—')}</td>
+                <td id="cpu-${c.id}" style="font-size:0.82rem; color:#adb5bd;">…</td>
+                <td id="mem-${c.id}" style="font-size:0.82rem; color:#adb5bd;">…</td>
                 <td>${stateBadge(c.state)}</td>
                 <td onclick="event.stopPropagation()">${actionButtons(c)}</td>
             </tr>`;
@@ -69,6 +69,20 @@ const ContainersView = (() => {
         </table>`;
     }
 
+    async function loadStats() {
+        try {
+            const statsList = await App.api('GET', '/containers/stats');
+            statsList.forEach(s => {
+                const cpuEl = document.getElementById('cpu-' + s.containerId);
+                const memEl = document.getElementById('mem-' + s.containerId);
+                if (cpuEl) { cpuEl.textContent = s.cpuPercent; cpuEl.style.color = ''; }
+                if (memEl) { memEl.textContent = s.memoryUsage; memEl.style.color = ''; }
+            });
+        } catch (err) {
+            // stats are best-effort — silently ignore
+        }
+    }
+
     async function load() {
         const content = document.getElementById('containers-content');
         content.innerHTML = '<div class="state-message">Loading containers…</div>';
@@ -77,6 +91,8 @@ const ContainersView = (() => {
             const containers = await App.api('GET', '/containers');
             App.setConnectionStatus('connected', 'Connected');
             content.innerHTML = renderTable(containers);
+            // Load stats asynchronously — takes ~2s but doesn't block the table render
+            loadStats();
         } catch (err) {
             App.setConnectionStatus('error', 'Connection error');
             content.innerHTML = App.errorState('Cannot connect to Docker socket: ' + err.message);
