@@ -2,6 +2,7 @@
  * volumes.js – Volumes list view
  */
 const VolumesView = (() => {
+    let allVolumes = [];
 
     function renderTable(volumes) {
         if (!volumes || volumes.length === 0) {
@@ -9,7 +10,7 @@ const VolumesView = (() => {
         }
 
         const rows = volumes.map(vol => {
-            const safeName = App.escapeHtml(vol.name);
+            const safeName    = App.escapeHtml(vol.name);
             const encodedName = encodeURIComponent(vol.name);
             const deleteBtn = `<button class="btn-action delete" title="Delete volume" onclick="VolumesView.remove('${encodedName}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -39,17 +40,31 @@ const VolumesView = (() => {
         </table>`;
     }
 
+    function applyFilter() {
+        const el   = document.getElementById('volumes-search');
+        const term = el ? el.value.trim().toLowerCase() : '';
+        const visible = term
+            ? allVolumes.filter(vol => (vol.name || '').toLowerCase().includes(term))
+            : allVolumes;
+        document.getElementById('volumes-content').innerHTML = renderTable(visible);
+    }
+
+    function filter() {
+        applyFilter();
+    }
+
     async function load() {
         const content = document.getElementById('volumes-content');
         content.innerHTML = '<div class="state-message">Loading volumes…</div>';
 
         try {
-            const volumes = await App.api('GET', '/volumes');
+            allVolumes = await App.api('GET', '/volumes');
             App.setConnectionStatus('connected', 'Connected');
-            content.innerHTML = renderTable(volumes);
+            applyFilter();
         } catch (err) {
             App.setConnectionStatus('error', 'Connection error');
             content.innerHTML = App.errorState('Cannot load volumes: ' + err.message);
+            allVolumes = [];
         }
     }
 
@@ -63,5 +78,5 @@ const VolumesView = (() => {
         }
     }
 
-    return { load, remove };
+    return { load, filter, remove };
 })();

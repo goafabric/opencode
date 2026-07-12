@@ -2,10 +2,13 @@
  * containers.js – Container list view
  */
 const ContainersView = (() => {
-    let autoRefreshTimer = null;
+    let autoRefreshTimer  = null;
     let statsRefreshTimer = null;
-    const REFRESH_INTERVAL = 2000;  // container list
-    const STATS_INTERVAL   = 5000;  // stats (backend takes ~1s per call)
+    let lastSnapshot      = '';   // signature of last rendered container list
+    let allContainers     = [];   // full unfiltered data
+
+    const REFRESH_INTERVAL = 2000;
+    const STATS_INTERVAL   = 5000;
 
     function stateBadge(state) {
         const normalized = (state || '').toLowerCase();
@@ -52,8 +55,8 @@ const ContainersView = (() => {
                 <td style="font-size:0.82rem;">${App.escapeHtml(c.ports || '—')}</td>
                 <td id="cpu-${c.id}" style="font-size:0.82rem; color:#adb5bd;">…</td>
                 <td id="mem-${c.id}" style="font-size:0.82rem; color:#adb5bd;">…</td>
-                <td>${stateBadge(c.state)}</td>
-                <td onclick="event.stopPropagation()">${actionButtons(c)}</td>
+                <td id="state-${c.id}">${stateBadge(c.state)}</td>
+                <td id="actions-${c.id}" onclick="event.stopPropagation()">${actionButtons(c)}</td>
             </tr>`;
         }).join('');
 
@@ -73,23 +76,49 @@ const ContainersView = (() => {
         </table>`;
     }
 
+    function getSearchTerm() {
+        const el = document.getElementById('containers-search');
+        return el ? el.value.trim().toLowerCase() : '';
+    }
+
+    function applyFilter() {
+        const term = getSearchTerm();
+        const visible = term
+            ? allContainers.filter(c =>
+                (c.name  || '').toLowerCase().includes(term) ||
+                (c.image || '').toLowerCase().includes(term) ||
+                (c.state || '').toLowerCase().includes(term) ||
+                (c.ports || '').toLowerCase().includes(term))
+            : allContainers;
+        const content = document.getElementById('containers-content');
+        content.innerHTML = renderTable(visible);
+    }
+
+    // Called by oninput on the search box
+    function filter() {
+        applyFilter();
+    }
+
+    function listSignature(containers) {
+        return containers.map(c => c.id + c.state).join(',');
+    }
+
     async function loadStats() {
         try {
             const statsList = await App.api('GET', '/containers/stats');
             statsList.forEach(s => {
                 const cpuEl = document.getElementById('cpu-' + s.containerId);
                 const memEl = document.getElementById('mem-' + s.containerId);
-                if (cpuEl) { cpuEl.textContent = s.cpuPercent; cpuEl.style.color = ''; }
+                if (cpuEl) { cpuEl.textContent = s.cpuPercent;  cpuEl.style.color = ''; }
                 if (memEl) { memEl.textContent = s.memoryUsage; memEl.style.color = ''; }
             });
         } catch (err) {
-            // stats are best-effort — silently ignore
+            // best-effort
         }
     }
 
     async function load() {
         const content = document.getElementById('containers-content');
-        // Only show the loading spinner on first load (when content is empty / has loading message)
         if (!content.querySelector('table')) {
             content.innerHTML = '<div class="state-message">Loading containers…</div>';
         }
@@ -97,28 +126,46 @@ const ContainersView = (() => {
         try {
             const containers = await App.api('GET', '/containers');
             App.setConnectionStatus('connected', 'Connected');
-            content.innerHTML = renderTable(containers);
+
+            const sig = listSignature(containers);
+            if (sig !== lastSnapshot) {
+                lastSnapshot  = sig;
+                allContainers = containers;
+                applyFilter(); // render with current search term
+            } else {
+                // Patch state + actions in-place without touching cpu/mem cells
+                containers.forEach(c => {
+                    const stateEl   = document.getElementById('state-'   + c.id);
+                    const actionsEl = document.getElementById('actions-' + c.id);
+                    if (stateEl)   stateEl.innerHTML   = stateBadge(c.state);
+                    if (actionsEl) actionsEl.innerHTML = actionButtons(c);
+                });
+            }
         } catch (err) {
             App.setConnectionStatus('error', 'Connection error');
-            content.innerHTML = App.errorState('Cannot connect to Docker socket: ' + err.message);
+            content.innerHTML = App.errorState('Cannot connect to container CLI: ' + err.message);
+            lastSnapshot  = '';
+            allContainers = [];
         }
     }
 
     function startAutoRefresh() {
         stopAutoRefresh();
+        lastSnapshot      = '';
         autoRefreshTimer  = setInterval(load,      REFRESH_INTERVAL);
         statsRefreshTimer = setInterval(loadStats,  STATS_INTERVAL);
-        loadStats(); // fetch stats once immediately on first load
+        loadStats();
     }
 
     function stopAutoRefresh() {
-        if (autoRefreshTimer !== null)  { clearInterval(autoRefreshTimer);  autoRefreshTimer  = null; }
+        if (autoRefreshTimer  !== null) { clearInterval(autoRefreshTimer);  autoRefreshTimer  = null; }
         if (statsRefreshTimer !== null) { clearInterval(statsRefreshTimer); statsRefreshTimer = null; }
     }
 
     async function start(id) {
         try {
             await App.api('POST', `/containers/${id}/start`);
+            lastSnapshot = '';
             await load();
         } catch (err) {
             alert('Failed to start container: ' + err.message);
@@ -128,6 +175,7 @@ const ContainersView = (() => {
     async function stop(id) {
         try {
             await App.api('POST', `/containers/${id}/stop`);
+            lastSnapshot = '';
             await load();
         } catch (err) {
             alert('Failed to stop container: ' + err.message);
@@ -138,11 +186,12 @@ const ContainersView = (() => {
         if (!confirm('Delete this container?')) return;
         try {
             await App.api('DELETE', `/containers/${id}`);
+            lastSnapshot = '';
             await load();
         } catch (err) {
             alert('Failed to delete container: ' + err.message);
         }
     }
 
-    return { load, start, stop, remove, startAutoRefresh, stopAutoRefresh };
+    return { load, filter, start, stop, remove, startAutoRefresh, stopAutoRefresh };
 })();

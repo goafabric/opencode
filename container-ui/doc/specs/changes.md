@@ -22,3 +22,7 @@
 # volume view
 - deleting a volume does nothing, it will refresh the view but the volume is still there
 - now that you are using container cmd you can do "container volume rm <volume>"
+
+# search bar
+for the image, volume and container view
+can you create a search bar at the top that will also filter the list based on the keystrokes
