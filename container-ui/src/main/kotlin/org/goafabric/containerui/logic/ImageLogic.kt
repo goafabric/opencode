@@ -22,7 +22,7 @@ class ImageLogic(private val adapter: AppleContainerAdapter) {
             val size = img.variants?.sumOf { it.size ?: 0L } ?: 0L
 
             Image(
-                id = img.id ?: "",
+                id = fullName,   // use name:tag as the delete key — the CLI doesn't accept raw sha256 ids
                 name = name,
                 tag = tag,
                 created = formatTimestamp(img.configuration?.creationDate),
@@ -31,7 +31,7 @@ class ImageLogic(private val adapter: AppleContainerAdapter) {
         }
     }
 
-    fun deleteImage(id: String) { adapter.run("image", "delete", id) }
+    fun deleteImage(nameTag: String) { adapter.run("image", "delete", nameTag) }
 
     private fun formatTimestamp(iso: String?): String {
         if (iso.isNullOrBlank()) return "–"

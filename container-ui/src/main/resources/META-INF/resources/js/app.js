@@ -23,11 +23,19 @@ const App = (() => {
         const sidebarItem = document.querySelector(`.sidebar-item[data-view="${viewName}"]`);
         if (sidebarItem) sidebarItem.classList.add('active');
 
+        // Stop container auto-refresh when leaving containers view
+        if (currentView !== viewName && typeof ContainersView !== 'undefined') {
+            ContainersView.stopAutoRefresh();
+        }
+
         currentView = viewName;
 
         // Load data for the view
         switch (viewName) {
-            case 'containers':      ContainersView.load(); break;
+            case 'containers':
+                ContainersView.load();
+                ContainersView.startAutoRefresh();
+                break;
             case 'images':          ImagesView.load(); break;
             case 'volumes':         VolumesView.load(); break;
             case 'container-detail': /* loaded externally */ break;

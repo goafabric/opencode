@@ -11,7 +11,7 @@ A Docker Desktop-like UI for Apple Containers, built with Quarkus (Kotlin) and p
 ./gradlew quarkusDev
 
 # Open in browser
-open http://localhost:8080
+open http://localhost:8081
 ```
 
 ## Running tests
@@ -26,15 +26,11 @@ open http://localhost:8080
 
 `src/main/resources/application.properties`
 
-| Property      | Default                                              | Description                        |
-|---------------|------------------------------------------------------|------------------------------------|
-| `docker.host` | `unix://${user.home}/.socktainer/container.sock`     | Docker Engine Unix socket path     |
-| `quarkus.http.port` | `8080`                                         | HTTP port                          |
+| Property              | Default | Description  |
+|-----------------------|---------|--------------|
+| `quarkus.http.port`   | `8081`  | HTTP port    |
 
-To connect to a different socket (e.g. standard Docker):
-```properties
-docker.host=unix:///var/run/docker.sock
-```
+No socket configuration is required. The adapter shells out to the `container` CLI which must be available on `$PATH`.
 
 ---
 
@@ -46,7 +42,8 @@ container-ui/
 ├── src/main/kotlin/org/goafabric/containerui/
 │   ├── Application.kt
 │   ├── adapter/
-│   │   └── DockerSocketAdapter.kt       # Unix domain socket → Docker Engine API (raw HTTP/1.0)
+│   │   ├── AppleContainerAdapter.kt     # Shells out to `container` CLI, parses JSON output
+│   │   └── model/                       # Raw JSON model classes (ContainerModels, ImageModels, VolumeModels)
 │   ├── controller/
 │   │   ├── ContainerController.kt       # GET /api/containers, POST start/stop, DELETE, GET logs
 │   │   ├── ImageController.kt           # GET /api/images, DELETE /api/images/{id}
@@ -54,17 +51,17 @@ container-ui/
 │   │   └── dto/                         # Container, ContainerLog, Image, Volume
 │   ├── logic/
 │   │   ├── ContainerLogic.kt            # List, start, stop, delete, fetch logs + stats
-│   │   ├── ImageLogic.kt                # List, delete
-│   │   └── VolumeLogic.kt              # List, delete
+│   │   ├── ImageLogic.kt                # List, delete (container image rm)
+│   │   └── VolumeLogic.kt              # List, delete (container volume rm)
 │   └── extensions/
 │       └── ExceptionHandler.kt
 └── src/main/resources/META-INF/resources/
-    ├── index.html                        # SPA shell: header, sidebar, view area
+    ├── index.html                        # SPA shell: header, resizable sidebar, view area
     ├── css/bootstrap.min.css
     └── js/
         ├── app.js                        # Navigation, fetch wrapper, shared utilities
-        ├── containers.js                 # Container list: name/image/ports/cpu/mem/state + actions
-        ├── container-detail.js           # Container detail: scrollable log view
+        ├── containers.js                 # Container list: name/image/ports/cpu/mem/state + actions, auto-refresh every 2s
+        ├── container-detail.js           # Container detail: log view with live search filter
         ├── images.js                     # Image list: name/tag/id/created/size + delete
         └── volumes.js                    # Volume list: name/created/size + delete
 ```
@@ -81,8 +78,23 @@ controller  →  logic  →  adapter
 
 - `controller/` calls `logic/`; never touches `adapter/` directly
 - `logic/` orchestrates business logic and calls `adapter/`
-- `adapter/` (DockerSocketAdapter) speaks raw HTTP over the Unix domain socket
+- `adapter/` (`AppleContainerAdapter`) shells out to the `container` CLI and parses JSON responses
 - DTOs in `controller/dto/` are the shared data contract between `controller` and `logic`
+
+### Key adapter commands
+
+| Operation        | CLI command                              |
+|------------------|------------------------------------------|
+| List containers  | `container list --format json`           |
+| Start container  | `container start <id>`                   |
+| Stop container   | `container stop <id>`                    |
+| Delete container | `container delete <id>`                  |
+| Container logs   | `container logs <id>`                    |
+| Container stats  | `container stats --format json`          |
+| List images      | `container image list --format json`     |
+| Delete image     | `container image delete <name:tag>`      |
+| List volumes     | `container volume list --format json`    |
+| Delete volume    | `container volume rm <name>`             |
 
 ---
 

@@ -3,9 +3,13 @@
  */
 const ContainerDetail = (() => {
     let currentId = null;
+    let rawLogs = '';
 
     function open(id, name) {
         currentId = id;
+        rawLogs = '';
+        const searchInput = document.getElementById('log-search');
+        if (searchInput) searchInput.value = '';
         document.getElementById('detail-container-name').textContent = name || id.substring(0, 12);
         App.navigate('container-detail');
         loadLogs();
@@ -18,13 +22,35 @@ const ContainerDetail = (() => {
 
         try {
             const data = await App.api('GET', `/containers/${currentId}/logs`);
-            const logs = (data && data.logs) ? data.logs : '(no log output)';
-            output.textContent = logs;
-            // Scroll to bottom
-            output.scrollTop = output.scrollHeight;
+            rawLogs = (data && data.logs) ? data.logs : '(no log output)';
+            renderLogs();
         } catch (err) {
+            rawLogs = '';
             output.textContent = 'Error loading logs: ' + err.message;
         }
+    }
+
+    function filterLogs() {
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const output = document.getElementById('log-output');
+        const searchInput = document.getElementById('log-search');
+        const term = searchInput ? searchInput.value.trim() : '';
+
+        if (!term) {
+            output.textContent = rawLogs;
+        } else {
+            const lines = rawLogs.split('\n');
+            const lower = term.toLowerCase();
+            const filtered = lines.filter(line => line.toLowerCase().includes(lower));
+            output.textContent = filtered.length > 0
+                ? filtered.join('\n')
+                : '(no lines match "' + term + '")';
+        }
+        // Scroll to bottom
+        output.scrollTop = output.scrollHeight;
     }
 
     function switchTab(tabName) {
@@ -37,5 +63,5 @@ const ContainerDetail = (() => {
         if (activePane) activePane.classList.add('active');
     }
 
-    return { open, loadLogs, switchTab };
+    return { open, loadLogs, filterLogs, switchTab };
 })();

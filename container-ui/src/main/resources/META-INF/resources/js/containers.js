@@ -2,6 +2,10 @@
  * containers.js – Container list view
  */
 const ContainersView = (() => {
+    let autoRefreshTimer = null;
+    let statsRefreshTimer = null;
+    const REFRESH_INTERVAL = 2000;  // container list
+    const STATS_INTERVAL   = 5000;  // stats (backend takes ~1s per call)
 
     function stateBadge(state) {
         const normalized = (state || '').toLowerCase();
@@ -85,18 +89,31 @@ const ContainersView = (() => {
 
     async function load() {
         const content = document.getElementById('containers-content');
-        content.innerHTML = '<div class="state-message">Loading containers…</div>';
+        // Only show the loading spinner on first load (when content is empty / has loading message)
+        if (!content.querySelector('table')) {
+            content.innerHTML = '<div class="state-message">Loading containers…</div>';
+        }
 
         try {
             const containers = await App.api('GET', '/containers');
             App.setConnectionStatus('connected', 'Connected');
             content.innerHTML = renderTable(containers);
-            // Load stats asynchronously — takes ~2s but doesn't block the table render
-            loadStats();
         } catch (err) {
             App.setConnectionStatus('error', 'Connection error');
             content.innerHTML = App.errorState('Cannot connect to Docker socket: ' + err.message);
         }
+    }
+
+    function startAutoRefresh() {
+        stopAutoRefresh();
+        autoRefreshTimer  = setInterval(load,      REFRESH_INTERVAL);
+        statsRefreshTimer = setInterval(loadStats,  STATS_INTERVAL);
+        loadStats(); // fetch stats once immediately on first load
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshTimer !== null)  { clearInterval(autoRefreshTimer);  autoRefreshTimer  = null; }
+        if (statsRefreshTimer !== null) { clearInterval(statsRefreshTimer); statsRefreshTimer = null; }
     }
 
     async function start(id) {
@@ -127,5 +144,5 @@ const ContainersView = (() => {
         }
     }
 
-    return { load, start, stop, remove };
+    return { load, start, stop, remove, startAutoRefresh, stopAutoRefresh };
 })();
