@@ -18,6 +18,9 @@ const ImagesView = (() => {
             </button>`;
 
             return `<tr class="no-hover">
+                <td class="col-check">
+                    <input type="checkbox" class="row-check" data-id="${App.escapeHtml(img.id)}" onchange="ImagesView.onCheckChange()">
+                </td>
                 <td><span style="font-weight:500;">${App.escapeHtml(img.name)}</span></td>
                 <td><span style="background:#e9ecef; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-family:monospace;">${App.escapeHtml(img.tag)}</span></td>
                 <td style="font-size:0.82rem; color:#6c757d;">${App.escapeHtml(img.created)}</td>
@@ -27,17 +30,31 @@ const ImagesView = (() => {
         }).join('');
 
         return `<table class="data-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Tag</th>
-                    <th>Created</th>
-                    <th>Size</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+            <thead><tr>
+                <th class="col-check"><input type="checkbox" class="row-check" id="images-check-all" onchange="ImagesView.toggleAll(this)"></th>
+                <th>Name</th><th>Tag</th><th>Created</th><th>Size</th><th>Actions</th>
+            </tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
+    }
+
+    function onCheckChange() {
+        const checked = document.querySelectorAll('#images-content .row-check[data-id]:checked').length;
+        document.getElementById('images-bulk-delete').disabled = checked === 0;
+        const all = document.querySelectorAll('#images-content .row-check[data-id]').length;
+        const hdr = document.getElementById('images-check-all');
+        if (hdr) hdr.checked = checked > 0 && checked === all;
+    }
+
+    function toggleAll(hdr) {
+        document.querySelectorAll('#images-content .row-check[data-id]')
+            .forEach(cb => cb.checked = hdr.checked);
+        onCheckChange();
+    }
+
+    function getCheckedIds() {
+        return [...document.querySelectorAll('#images-content .row-check[data-id]:checked')]
+            .map(cb => cb.dataset.id);
     }
 
     function applyFilter() {
@@ -49,16 +66,14 @@ const ImagesView = (() => {
                 (img.tag  || '').toLowerCase().includes(term))
             : allImages;
         document.getElementById('images-content').innerHTML = renderTable(visible);
+        document.getElementById('images-bulk-delete').disabled = true;
     }
 
-    function filter() {
-        applyFilter();
-    }
+    function filter() { applyFilter(); }
 
     async function load() {
         const content = document.getElementById('images-content');
         content.innerHTML = '<div class="state-message">Loading images…</div>';
-
         try {
             allImages = await App.api('GET', '/images');
             App.setConnectionStatus('connected', 'Connected');
@@ -72,13 +87,19 @@ const ImagesView = (() => {
 
     async function remove(id) {
         if (!confirm('Delete this image?')) return;
-        try {
-            await App.api('DELETE', `/images/${encodeURIComponent(id)}`);
-            await load();
-        } catch (err) {
-            alert('Failed to delete image: ' + err.message);
-        }
+        try { await App.api('DELETE', `/images/${encodeURIComponent(id)}`); await load(); }
+        catch (err) { alert('Failed to delete image: ' + err.message); }
     }
 
-    return { load, filter, remove };
+    async function bulkRemove() {
+        const ids = getCheckedIds();
+        if (ids.length === 0) return;
+        if (!confirm(`Delete ${ids.length} image(s)?`)) return;
+        try {
+            await Promise.all(ids.map(id => App.api('DELETE', `/images/${encodeURIComponent(id)}`)));
+            await load();
+        } catch (err) { alert('Failed to delete images: ' + err.message); }
+    }
+
+    return { load, filter, remove, bulkRemove, onCheckChange, toggleAll };
 })();

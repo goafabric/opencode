@@ -502,6 +502,48 @@
 
         .btn-refresh:hover { background: #f1f3f5; }
         .btn-refresh svg { width: 14px; height: 14px; }
+
+        /* ── Bulk-delete button ── */
+        .btn-bulk-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.83rem;
+            cursor: pointer;
+            color: #6c757d;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .btn-bulk-delete svg { width: 14px; height: 14px; }
+
+        .btn-bulk-delete:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-bulk-delete:not(:disabled):hover {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        /* ── Row checkbox ── */
+        .row-check {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--sidebar-active);
+        }
+
+        .data-table th.col-check,
+        .data-table td.col-check {
+            width: 36px;
+            padding: 8px 10px 8px 14px;
+        }
     </style>
 </head>
 <body>
@@ -575,6 +617,13 @@
                     </svg>
                     <input id="containers-search" type="text" placeholder="Filter containers…" oninput="ContainersView.filter()">
                 </div>
+                <button id="containers-bulk-delete" class="btn-bulk-delete" disabled onclick="ContainersView.bulkRemove()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                </button>
                 <button class="btn-refresh" onclick="ContainersView.load()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="23 4 23 10 17 10"/>
@@ -657,6 +706,13 @@
                     </svg>
                     <input id="images-search" type="text" placeholder="Filter images…" oninput="ImagesView.filter()">
                 </div>
+                <button id="images-bulk-delete" class="btn-bulk-delete" disabled onclick="ImagesView.bulkRemove()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                </button>
                 <button class="btn-refresh" onclick="ImagesView.load()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="23 4 23 10 17 10"/>
@@ -694,6 +750,13 @@
                     </svg>
                     <input id="volumes-search" type="text" placeholder="Filter volumes…" oninput="VolumesView.filter()">
                 </div>
+                <button id="volumes-bulk-delete" class="btn-bulk-delete" disabled onclick="VolumesView.bulkRemove()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                </button>
                 <button class="btn-refresh" onclick="VolumesView.load()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="23 4 23 10 17 10"/>
@@ -717,11 +780,11 @@
     </main>
 </div>
 
-<script src="js/app.js?v=5"></script>
-<script src="js/containers.js?v=5"></script>
-<script src="js/container-detail.js?v=5"></script>
-<script src="js/images.js?v=5"></script>
-<script src="js/volumes.js?v=5"></script>
+<script src="js/app.js?v=6"></script>
+<script src="js/containers.js?v=6"></script>
+<script src="js/container-detail.js?v=6"></script>
+<script src="js/images.js?v=6"></script>
+<script src="js/volumes.js?v=6"></script>
 <script>
     // ── Sidebar drag-to-resize ──
     (function () {

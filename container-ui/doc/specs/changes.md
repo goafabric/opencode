@@ -26,3 +26,10 @@
 # search bar
 for the image, volume and container view
 can you create a search bar at the top that will also filter the list based on the keystrokes
+     
+# delete action
+for the image, volume and container view
+can you enable multi selection of entries via a checkbox to the left
+and create a trashbin icon button left to the top refresh button
+that wen clicked will remove all of the checked ones
+of course it should only be enabled if at least on check box is clicked
