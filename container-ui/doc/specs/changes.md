@@ -33,3 +33,8 @@ can you enable multi selection of entries via a checkbox to the left
 and create a trashbin icon button left to the top refresh button
 that wen clicked will remove all of the checked ones
 of course it should only be enabled if at least on check box is clicked
+              
+# container view
+- in the container view can you add another register card "Inspect" that shows the result of "container inspect <id>"
+- in the container view can you add another register card "Execute" that allows us to execute into the container with "container exec <id>",
+- this of course needs to display a terminal like console
