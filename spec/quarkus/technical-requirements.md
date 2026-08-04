@@ -1,7 +1,5 @@
 ## technical requirements
 
-- this is a supporting description of the example service files inside the zipped file, which needs to be unzipped `./spec/quarkus/example.zip`
-
 ## 2 Build process
 - the build is based on gradle build.gradle.kts
 - the gradle version should be at least 9.5.1
