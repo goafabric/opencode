@@ -14,6 +14,8 @@ container run --cpus 6 --memory 1024m --rm --name opencode --dns 8.8.8.8 -v "$HO
 # TurboFieldFare
 https://github.com/Pummelchen/NVMAI/wiki/Getting-Started
 
+defaults write TurboFieldfare model qwen36
+
 .build/release/TurboFieldfareMac
 
 .build/release/TurboFieldfareServer \
