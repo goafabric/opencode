@@ -14,5 +14,7 @@ container run --cpus 6 --memory 1024m --rm --name opencode -v "$HOME/.config/ope
 # TurboFieldFare
 https://github.com/Pummelchen/NVMAI/wiki/Getting-Started
 
+.build/release/TurboFieldfareMac
+
 .build/release/TurboFieldfareServer \
 --model scratch/qwen36.gturbo --model-id qwen3.6-35b-a3b --port 8080 --max-context 65536
