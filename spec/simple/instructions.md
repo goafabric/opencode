@@ -13,3 +13,4 @@ when writing new services build them with quarkus and kotlin based on the follow
                                            
 # verification
 - when you are finished with code generation execute `gradlew clean build` to verify everything
+- you can find a gradle wrapper inside `./spec/simple/gradle/wrapper/'
