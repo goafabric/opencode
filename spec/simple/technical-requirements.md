@@ -30,7 +30,9 @@
 - persistence/entity contains the JPA entities
 - persistence, contains the repositories, these must be based on the new "PanacheRepository.Managed", for details: https://quarkus.io/version/main/guides/quarkus-data-hibernate
 - for persistence don't use the CrudRepository from Jakarta Data instead, as it has a stateless sessions with limitations
-- for persistence annotations from jakarta data are allowed however, for examples see the repositories inside example service
+- 
+- for persistence annotations from jakarta data should be used like @Find and @Query, just use a repository interface
+- example `@Find fun findByLastName(lastName: String, pageable: PageRequest): Page<PersonEo>`
 
 - classes inside the package controller/dto should NOT be suffixed with Dto, DTO, Result, Response - They should just have a simple name like Person, Address ..
 
