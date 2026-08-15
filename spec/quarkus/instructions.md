@@ -14,3 +14,4 @@ when writing new services build them with quarkus and kotlin based on the follow
                                            
 # verification
 - when you are finished with code generation execute `gradlew clean build` to verify everything
+- then when everything is done create an AGENTS.md inside the project root, that describes the project
