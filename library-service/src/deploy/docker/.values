@@ -1,0 +1,6 @@
+_Values_root_name="library-service"
+
+_Values_image_repository=goafabric/library-service-quarkus
+
+_Values_service_port=50801
+_Values_resources_requests_memory=32M

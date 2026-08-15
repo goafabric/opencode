@@ -1,0 +1,17 @@
+create table audit_trail
+(
+	id varchar(36) not null
+		constraint pk_audit
+			primary key,
+
+    object_type varchar(255),
+
+    object_id varchar(255),
+    operation varchar(255),
+    created_by varchar(255),
+    created_at date,
+    modified_by varchar(255),
+    modified_at date,
+    old_value TEXT,
+    new_value TEXT
+);

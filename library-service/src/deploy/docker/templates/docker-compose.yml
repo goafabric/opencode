@@ -1,0 +1,169 @@
+services:
+  application:
+    container_name: ${_Values_root_name}-application
+    image:  ${_Values_image_repository}:${_Values_image_tag}
+    restart: 'no'
+    ports:
+      - "${_Values_service_port}:${_Values_service_port}"
+    command: ["-Xmx${_Values_resources_requests_memory}"]
+
+    healthcheck:
+      test: "curl -f http://localhost:${_Values_service_port}/actuator/health || exit 1"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - tmp:/tmp
+      - applogs:/usr/share/logs
+      - ./secrets:/mnt/secrets
+    networks:
+      - ${_Values_root_name}-net
+    environment:
+      #application
+      TZ: Europe/Berlin
+      quarkus.http.port: "${_Values_service_port}"
+      quarkus.http.io-threads: "20"
+
+      #tracing
+      quarkus.otel.exporter.otlp.traces.endpoint: "http://${_Values_host_docker_internal}:4317"
+      quarkus.application.name: "library-service"
+
+      #persistence
+#      quarkus.datasource.jdbc.url: "jdbc:postgresql://postgres:5432/library"
+      quarkus.datasource.jdbc.url: "jdbc:postgresql://${_Values_host_docker_internal}:5432/library"
+      quarkus.datasource.jdbc.max-size: "10"
+
+      database.provisioning.goals: "-migrate -import-demo-data"
+
+      #adapter
+      adapter.calleeservice.url: "http://${_Values_host_docker_internal}:50900"
+      adapter.timeout: "10000"
+      adapter.circuitBreaker.enabled: "true"
+
+      #kafka
+      kafka.bootstrap.servers: "${_Values_host_docker_internal}:9093"
+      mp.messaging.outgoing.general.enabled: "true"
+
+      mp.messaging.connector.smallrye-kafka.security.protocol: "SASL_PLAINTEXT"
+      mp.messaging.connector.smallrye-kafka.sasl.mechanism: "PLAIN" #"SCRAM-SHA-512"
+      mp.messaging.connector.smallrye-kafka.sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$${kafka.username}" password="$${kafka.password}";
+
+      #azure blob
+      quarkus.azure.storage.blob.enabled: "true"
+      azure.storage.blob.container-name: "library"
+#      quarkus.azure.storage.blob.connection-string: DefaultEndpointsProtocol=http;AccountName=$${azure.storage.blob.account-name};AccountKey=$${azure.storage.blob.account-key};BlobEndpoint=http://azurite:10000/$${azure.storage.blob.account-name}
+      quarkus.azure.storage.blob.connection-string: DefaultEndpointsProtocol=http;AccountName=$${azure.storage.blob.account-name};AccountKey=$${azure.storage.blob.account-key};BlobEndpoint=http://${_Values_host_docker_internal}:10000/$${azure.storage.blob.account-name}
+      #quarkus.azure.storage.blob.connection-string=DefaultEndpointsProtocol=https;AccountName=$${azure.storage.blob.account-name};AccountKey=$${azure.storage.blob.account-key};EndpointSuffix=core.windows.net
+
+      azure.storage.blob.account-name: devstoreaccount1
+      azure.storage.blob.account-key: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+
+      #secrets
+      #quarkus.datasource.username: "library-service"
+      #quarkus.datasource.password: "library-service"
+      #kafka.username: "admin"
+      #kafka.password: "supersecret"
+
+      quarkus.configtree.path: "/mnt/secrets"
+      quarkus.datasource.username: $${spring.datasource.username}
+      quarkus.datasource.password: $${spring.datasource.password}
+
+      #log levels
+      QUARKUS_LOG_LEVEL: "INFO"
+      QUARKUS_LOG_CATEGORY__ORG_GOAFABRIC__LEVEL: "INFO"
+      QUARKUS_LOG_CATEGORY__ORG_FLYWAYDB_CORE__LEVEL: "INFO"
+      QUARKUS_LOG_CATEGORY__ORG_HIBERNATE__LEVEL: "INFO"
+
+
+    depends_on:
+      postgres:
+        condition: service_started
+
+  postgres:
+    container_name: ${_Values_root_name}-postgres
+    image: postgres:18.3
+    restart: 'no'
+    ports:
+      - 5432:5432
+    environment:
+      TZ: "Europe/Berlin"
+      #secrets
+      POSTGRES_USER: "library-service"
+      POSTGRES_PASSWORD: "library-service"
+      POSTGRES_DB: "library"
+
+    command: postgres -c 'shared_buffers=64MB' -c 'max_connections=30' -c 'shared_preload_libraries=pg_stat_statements'
+    healthcheck:
+      test: "sh -c pg_isready"
+      interval: 2s
+      timeout: 5s
+      retries: 5
+#    volumes:
+#      - pgdata_quarkus:/var/lib/postgresql/data
+    networks:
+      - ${_Values_root_name}-net
+
+  nginx:
+    container_name: ${_Values_root_name}-nginx
+    image: nginx:1.28-alpine3.21
+    restart: 'no'
+    ports:
+      - 8080:80
+      - 444:443
+    networks:
+      - ${_Values_root_name}-net
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/ssl/
+    depends_on:
+      application:
+        condition: service_started
+
+  kafka:
+    image: apache/kafka:4.2.0
+    container_name: ${_Values_root_name}-kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9094
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+
+      KAFKA_LISTENERS: SASL_PLAINTEXT://0.0.0.0:9092,SASL_PLAINTEXT_EXTERNAL://0.0.0.0:9093,CONTROLLER://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://kafka:9092,SASL_PLAINTEXT_EXTERNAL://${_Values_host_docker_internal}:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_PLAINTEXT_EXTERNAL:SASL_PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_INTER_BROKER_LISTENER_NAME: SASL_PLAINTEXT
+      KAFKA_OPTS: -Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf
+
+    volumes:
+      - ./config/kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
+    networks:
+      - ${_Values_root_name}-net
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: ${_Values_root_name}-azurite
+    ports:
+      - "10000:10000"
+    networks:
+      - ${_Values_root_name}-net
+
+volumes:
+    tmp:
+    applogs:
+    pgdata_quarkus:
+
+networks:
+  library-service-net:
+    driver: bridge

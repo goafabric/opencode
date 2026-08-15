@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+     <meta charset="UTF-8">
+     <title>Library Service</title>
+     <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+     <div style="margin-left: 20px;">
+         <h1>Library Service Quarkus</h1>
+         <h2>Monitoring Links</h2>
+         <ul>
+             <li><a href="actuator/health">Health</a></li>
+             <li><a href="actuator/prometheus">Prometheus</a></li>
+             <li><a href="q/swagger-ui">Swagger API Documentation</a></li>
+             <li><a href="q/dev-ui">Quarkus Dev UI</a></li>
+         </ul>
+         <h2>Student Service Links</h2>
+         <ul>
+             <li><a href="students?page=0&size=3">find all students</a></li>
+             <li><a href="students?lastName=Simpson&page=0&size=3">find students by last name</a></li>
+             <li><a href="students?firstName=Homer&page=0&size=3">find students by first name</a></li>
+         </ul>
+         <h2>Library Service Links</h2>
+         <ul>
+             <li><a href="libraries?page=0&size=3">find all libraries</a></li>
+             <li><a href="libraries?city=Springfield&page=0&size=3">find libraries by city</a></li>
+         </ul>
+         <h2>Book Service Links</h2>
+         <ul>
+             <li><a href="books?page=0&size=3">find all books</a></li>
+             <li><a href="books?title=The%20Simpsons&page=0&size=3">find books by title</a></li>
+             <li><a href="books?author=Matt%20Groening&page=0&size=3">find books by author</a></li>
+         </ul>
+
+     </div>
+</body>
+</html>
