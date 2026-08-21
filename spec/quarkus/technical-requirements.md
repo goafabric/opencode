@@ -5,7 +5,7 @@
 ## 2 Build process
 - the build is based on gradle build.gradle.kts
 - the gradle version should be at least 9.5.1
-- new projects should be based on at least quarkus 3.37.0
+- new projects should be based on at least quarkus 3.38.2
 - the task "jibJvmImage" will build and push a jvm multi-arch image via jib
 - the task "nativeImage" will build and push a native image
 - for the remaining requirements please analyze build.gradle.kts

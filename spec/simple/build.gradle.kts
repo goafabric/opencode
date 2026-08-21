@@ -10,14 +10,14 @@ val dockerRegistry = "goafabric"
 plugins {
 	java
 	jacoco
-	id("io.quarkus") version "3.37.1"
+	id("io.quarkus") version "3.38.2"
 	id("net.researchgate.release") version "3.1.0"
-	id("org.sonarqube") version "7.3.1.8318"
+	id("org.sonarqube") version "7.4.0.8496"
 
-	kotlin("jvm") version "2.4.0"
-	kotlin("plugin.jpa") version "2.4.0"
-	kotlin("plugin.allopen") version "2.4.0"
-	kotlin("kapt") version "2.4.0"
+	kotlin("jvm") version "2.4.10"
+	kotlin("plugin.jpa") version "2.4.10"
+	kotlin("plugin.allopen") version "2.4.10"
+	kotlin("kapt") version "2.4.10"
 }
 
 repositories {
@@ -28,18 +28,18 @@ dependencies {
 	constraints {
 		annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 		implementation("org.mapstruct:mapstruct:1.6.3")
-		implementation("io.quarkiverse.azureservices:quarkus-azure-storage-blob:1.2.4")
-		implementation("io.quarkiverse.mcp:quarkus-mcp-server-http:1.13.0")
+		implementation("io.quarkiverse.azureservices:quarkus-azure-storage-blob:1.2.5")
+		implementation("io.quarkiverse.mcp:quarkus-mcp-server-http:1.13.1")
 
 		kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
 		testImplementation("org.assertj:assertj-core:3.27.7")
-		testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
+		testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
 		testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
 	}
 
-	kapt(enforcedPlatform("io.quarkus:quarkus-bom:3.37.1"))
-	implementation(enforcedPlatform("io.quarkus:quarkus-bom:3.37.1"))
+	kapt(enforcedPlatform("io.quarkus:quarkus-bom:3.38.2"))
+	implementation(enforcedPlatform("io.quarkus:quarkus-bom:3.38.2"))
 }
 dependencies {
 	//web
@@ -69,7 +69,7 @@ dependencies {
 	kapt("org.hibernate.orm:hibernate-processor")
 
 	//adapter
-	implementation("io.quarkus:quarkus-resteasy-client-jackson")
+	implementation("io.quarkus:quarkus-rest-client-jackson")
 	implementation("io.quarkus:quarkus-smallrye-fault-tolerance")
 
 	//jib
@@ -99,7 +99,7 @@ dependencies {
 	//test
 	testImplementation("io.quarkus:quarkus-junit5")
 	testImplementation("io.rest-assured:rest-assured")
-	testImplementation("io.quarkus:quarkus-resteasy-client-jackson")
+	testImplementation("io.quarkus:quarkus-rest-client-jackson")
 	testImplementation("io.quarkus:quarkus-jacoco")
 	testImplementation("org.assertj:assertj-core")
 	testImplementation("com.tngtech.archunit:archunit-junit5")
