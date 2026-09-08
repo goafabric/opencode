@@ -1,6 +1,6 @@
 ---
 name: jira
-description: Interact with Jira via the Atlassian MCP server. Use this skill whenever you need to search, create, update, or transition Jira issues, add comments, manage sprints, or link issues. Trigger keywords: Jira, issue, ticket, sprint, KAN, backlog, story, bug, task, epic, subtask.
+description: Interact with the Atlassian Jira MCP
 ---
 
 # Atlassian Jira Skill
@@ -62,12 +62,3 @@ To find sprint IDs, use `discover` with query `"list sprints for board"`.
 - **Views:** use `view: "compact"` for scanning, `view: "evidence"` when custom fields (story points, sprint) are needed.
 - **Pagination:** use `nextPageToken` to page through large result sets; stop when `isLast` is `true`.
 - **Unknown operations:** call `discover` first with a verb phrase (e.g. `"list sprints for board"`).
-
-## Known Site Data
-
-| Field | Value |
-|-------|-------|
-| Cloud ID | `16e59ed8-356a-4e57-8509-387969f2573b` |
-| Project | `KAN` |
-| Language | German UI (`Zu erledigen` = To Do, `In Arbeit` = In Progress) |
-| Issues seen | KAN-1 (Task), KAN-2 (Story), KAN-3 (Subtask), KAN-4 (Story) |
