@@ -12,7 +12,7 @@ container run --cpus 6 --memory 1024m --rm --name opencode --dns 8.8.8.8 -v "$HO
 -it ghcr.io/anomalyco/opencode:1.18.8 --model anthropic/claude-sonnet-4-6-1
   
 # TurboFieldFare
-https://github.com/Pummelchen/NVMAI/wiki/Getting-Started
+https://github.com/Pummelchen/TinyTitan/wiki/Getting-Started
 
 defaults write TinyTitan model qwen36
 
