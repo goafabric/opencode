@@ -12,11 +12,9 @@ container run --cpus 6 --memory 1024m --rm --name opencode --dns 8.8.8.8 -v "$HO
 -it ghcr.io/anomalyco/opencode:1.18.8 --model anthropic/claude-sonnet-4-6-1
   
 # TurboFieldFare
-https://github.com/Pummelchen/NVMAI/wiki/Getting-Started
+https://github.com/Pummelchen/TinyTitan/wiki/Getting-Started
 
-defaults write TurboFieldfare model qwen36
+defaults write TinyTitan model qwen36
 
-.build/release/TurboFieldfareMac
-
-.build/release/TurboFieldfareServer \
---model scratch/qwen36.gturbo --model-id qwen3.6-35b-a3b --port 8080 --max-context 65536
+~/IdeaProjects/xplayground/tinytitan/TinyTitanServer \
+--model ~/Library/Application\ Support/TinyTitan/qwen3.6_35B_A3B_4Bit --port 8080 --max-context 65536 --ram-budget 5g
