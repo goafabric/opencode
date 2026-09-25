@@ -12,5 +12,6 @@
 - agentic flow
 - own harness
 - vector catalog
+- guardrail
 
       
