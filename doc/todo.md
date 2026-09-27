@@ -5,8 +5,6 @@
 - ml learning: https://tribuo.org/, deep q learning, model refinement (unsloth)
 - hermes, n8n
 - graphrag
-- https://agentexecutor.io/
-
 
 # quarkus
 - agentic flow
