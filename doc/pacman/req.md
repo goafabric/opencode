@@ -1,0 +1,5 @@
+- can you adapt the existing pacman.html which has pacman in a single html file
+- you can keep the input via keyboard
+- but i would also be able to control the movement from the outside to have it controlled by a jev like decission LLM
+- for this i guess we need to have endpoints that can be called via curl for the movement
+- and 
