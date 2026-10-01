@@ -25,5 +25,5 @@ curl http://localhost:11434/v1/systemone -d '{
 "criteria": {"doener": "tasty", "schawarma": "tasty and healthy"}
 }
 }
-}'
+}' | jq .
 
