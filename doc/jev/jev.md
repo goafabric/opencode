@@ -13,3 +13,17 @@ curl http://localhost:11434/v1/systemone -d '{
 }
 }
 }'
+
+
+curl http://localhost:11434/v1/systemone -d '{
+"model": "tev1",
+"state": "We would like to go to lunch",
+"questions": {
+"label": {
+"type": "choice",
+"instructions": "Where should we go for lunch. It should be tasty and maybe not to unhealthy. The doener has pizza, fallafel and kebap. The schwarma has no pizza, but schwarma, fallafel, humus, baba ganough",
+"criteria": {"doener": "tasty", "schawarma": "tasty and healthy"}
+}
+}
+}'
+
