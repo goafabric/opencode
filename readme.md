@@ -16,11 +16,8 @@ d=$(mktemp -d) && printf '%s\n' 'FROM ghcr.io/anomalyco/opencode:1.18.8' 'RUN ap
 
 container exec -it opencode /bin/sh
 
-container run --cpus 6 --memory 2048m --rm --name opencode --dns 8.8.8.8 -v "$HOME/.config/opencode:/root/.config/opencode" -v "$HOME/.local/share/opencode:/root/.local/share/opencode" -v "${PWD}:/workspace" -v "$HOME/.gradle:/.gradle" -v "${PWD}/.gradle:.gradle" -w /workspace \
--it opencode-java:1.18.8 --model anthropic/claude-sonnet-4-6-1
-
-container run --cpus 6 --memory 2048m --rm --name opencode --dns 8.8.8.8 -e GRADLE_USER_HOME=/root/.gradle -v "$HOME/.config/opencode:/root/.config/opencode" -v "$HOME/.local/share/opencode:/root/.local/share/opencode" -v "$HOME/.gradle:/root/.gradle" -v "${PWD}:/workspace" -w /workspace 
--it opencode-java:1.18.8 --model anthropic/claude-sonnet-4-6-1
+container run --cpus 6 --memory 2048m --rm --name opencode --dns 8.8.8.8 -e GRADLE_USER_HOME=/root/.gradle -v "$HOME/.config/opencode:/root/.config/opencode" -v "$HOME/.local/share/opencode:/root/.local/share/opencode" -v "$HOME/.gradle:/root/.gradle" -v "${PWD}:/workspace" -w /workspace \
+-it opencode-java:1.18.8 --model anthropic/claude-sonnet-5
 
 
 # TurboFieldFare
