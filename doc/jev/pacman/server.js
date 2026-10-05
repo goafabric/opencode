@@ -209,25 +209,38 @@ async function callOllama(prompt) {
     });
     if (!res.ok) throw new Error(`ollama http ${res.status}`);
     const data = await res.json();
-    const choice = data && data.answers && data.answers.move && data.answers.move.choice;
+    const answer = data && data.answers && data.answers.move;
+    const choice = answer && answer.choice;
     if (!DIRECTIONS.has(choice)) throw new Error("ollama response had no usable move.choice");
-    return choice;
+    return { choice, probabilities: answer.probabilities || {}, confidence: answer.confidence };
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Compact, single-line rendering of per-choice probabilities plus overall
+// confidence, highest first, e.g. "left=0.98 right=0.02 conf=0.85".
+function formatOllamaScores(probabilities, confidence) {
+  const parts = Object.entries(probabilities || {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([dir, p]) => `${dir}=${p.toFixed(2)}`);
+  if (typeof confidence === "number") parts.push(`conf=${confidence.toFixed(2)}`);
+  return parts.join(" ");
 }
 
 async function autoplayTick() {
   const tickStartedAt = Date.now();
   if (autoplayEnabled && latestState) {
     const prompt = buildDecisionPrompt();
-    let direction = null, error = null, elapsedMs = null;
+    let direction = null, error = null, elapsedMs = null, probabilities = null, confidence = null;
 
     if (prompt) {
-      console.log("[ollama] calling jev...");
       const startedAt = Date.now();
       try {
-        direction = await callOllama(prompt);
+        const result = await callOllama(prompt);
+        direction = result.choice;
+        probabilities = result.probabilities;
+        confidence = result.confidence;
       } catch (err) {
         error = String((err && err.message) || err);
       } finally {
@@ -240,11 +253,16 @@ async function autoplayTick() {
       pendingActions.push("restart"); // keep the self-play demo going indefinitely
     }
 
-    autoplayInfo = { lastDirection: direction, lastError: error, lastElapsedMs: elapsedMs, lastAt: Date.now() };
-    // One line per move: ollama was called, how long it took, and what came back.
+    autoplayInfo = {
+      lastDirection: direction, lastError: error, lastElapsedMs: elapsedMs,
+      lastProbabilities: probabilities, lastConfidence: confidence, lastAt: Date.now()
+    };
+    // One line per move: ollama was called, its per-choice scores, how long
+    // it took, and what came back, e.g. `[ollama] "left=0.98 right=0.02
+    // conf=0.85" -> left (53ms)`.
     console.log(error
       ? `[ollama] call failed after ${elapsedMs}ms: ${error}`
-      : `[ollama] -> ${direction} (${elapsedMs}ms)`);
+      : `[ollama] "${formatOllamaScores(probabilities, confidence)}" -> ${direction} (${elapsedMs}ms)`);
   }
   // Pace ticks AUTOPLAY_INTERVAL_MS apart measured from tick *start*, not
   // stacked on top of however long the ollama call took — otherwise a
