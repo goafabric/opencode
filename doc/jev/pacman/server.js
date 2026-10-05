@@ -197,7 +197,11 @@ function buildDecisionPrompt() {
 }
 
 // --------------------------------------------------------- decision engine
-async function callOllama(prompt) {
+// Does the actual HTTP call to ollama and returns its raw, unprocessed JSON
+// response — used both by callOllama() (autoplay) and by the
+// GET /api/decision/call debug endpoint, which exposes this verbatim
+// alongside the request that produced it.
+async function callOllamaRaw(prompt) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
   try {
@@ -208,14 +212,18 @@ async function callOllama(prompt) {
       signal: controller.signal
     });
     if (!res.ok) throw new Error(`ollama http ${res.status}`);
-    const data = await res.json();
-    const answer = data && data.answers && data.answers.move;
-    const choice = answer && answer.choice;
-    if (!DIRECTIONS.has(choice)) throw new Error("ollama response had no usable move.choice");
-    return { choice, probabilities: answer.probabilities || {}, confidence: answer.confidence };
+    return await res.json();
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function callOllama(prompt) {
+  const data = await callOllamaRaw(prompt);
+  const answer = data && data.answers && data.answers.move;
+  const choice = answer && answer.choice;
+  if (!DIRECTIONS.has(choice)) throw new Error("ollama response had no usable move.choice");
+  return { choice, probabilities: answer.probabilities || {}, confidence: answer.confidence };
 }
 
 // Compact, single-line rendering of per-choice probabilities plus overall
@@ -312,6 +320,20 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, prompt);
     }
 
+    // External: actually calls ollama with the current decision request and
+    // returns both, for debugging/inspection — independent of the autoplay
+    // loop (does not touch pendingDirection or autoplayInfo).
+    if (req.method === "GET" && pathname === "/api/decision/call") {
+      const request = buildDecisionPrompt();
+      if (!request) return send(res, 503, { ok: false, error: "no game page connected yet" });
+      try {
+        const response = await callOllamaRaw(request);
+        return send(res, 200, { ok: true, request, response });
+      } catch (err) {
+        return send(res, 502, { ok: false, request, error: String((err && err.message) || err) });
+      }
+    }
+
     // External: drive Pac-Man's next direction, e.g.
     //   curl -X POST localhost:8787/api/move -d '{"direction":"up"}'
     if (req.method === "POST" && pathname === "/api/move") {
@@ -359,6 +381,7 @@ server.listen(PORT, () => {
   console.log(`  Open the game (it plays itself by default): http://localhost:${PORT}/`);
   console.log(`  Query state:            curl http://localhost:${PORT}/api/state`);
   console.log(`  Get decision prompt:    curl http://localhost:${PORT}/api/decision`);
+  console.log(`  Call ollama + see both: curl http://localhost:${PORT}/api/decision/call`);
   console.log(`  Move Pac-Man:           curl -X POST http://localhost:${PORT}/api/move -d '{"direction":"up"}'`);
   console.log(`  Pause/resume/restart:   curl -X POST http://localhost:${PORT}/api/control -d '{"action":"pause"}'`);
   console.log(`  Toggle autoplay:        curl -X POST http://localhost:${PORT}/api/autoplay -d '{"enabled":false}'`);

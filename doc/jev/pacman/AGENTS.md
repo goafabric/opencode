@@ -59,6 +59,7 @@ Env vars (all optional):
 | `GET /` | the game page |
 | `GET /api/state` | current state for a human or a model: Pac-Man tile/direction/legal moves, all 4 ghosts (position, status, distance), a 7x7 text window around Pac-Man, the full maze grid, score/lives/level/pellets. `503` until a browser tab has connected. |
 | `GET /api/decision` | the same state, pre-packaged as a ready-to-curl `jev`/ollama `systemone` request body (`state` text + a `move` choice question whose `criteria` are only the currently-legal directions). |
+| `GET /api/decision/call` | actually calls ollama with that request right now and returns both `{ request, response }` verbatim — for debugging/inspecting what the model sees and says, independent of the autoplay loop (does not touch `pendingDirection` or `autoplayInfo`). |
 | `POST /api/move` `{"direction":"up"\|"down"\|"left"\|"right"}` | queue Pac-Man's next move — same effect as a keypress. |
 | `POST /api/control` `{"action":"pause"\|"resume"\|"restart"}` | control the game externally. |
 | `GET /api/autoplay` / `POST /api/autoplay {"enabled":true\|false}` | inspect/toggle the self-play loop (also toggleable from the on-page button). |
@@ -68,6 +69,7 @@ Examples:
 ```bash
 curl http://localhost:8787/api/state
 curl http://localhost:8787/api/decision
+curl http://localhost:8787/api/decision/call
 curl -X POST http://localhost:8787/api/move -d '{"direction":"up"}'
 curl -X POST http://localhost:8787/api/control -d '{"action":"restart"}'
 curl -X POST http://localhost:8787/api/autoplay -d '{"enabled":false}'
