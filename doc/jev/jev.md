@@ -3,7 +3,7 @@ https://ollama.com/blog/ollama-now-supports-jev-style-decision-models
 
 
 curl http://localhost:11434/v1/systemone -d '{
-"model": "tev1",
+"model": "tev1:4b",
 "state": "Our checkout has returned 500 errors since 9am.",
 "questions": {
 "label": {
@@ -16,7 +16,7 @@ curl http://localhost:11434/v1/systemone -d '{
 
 
 curl http://localhost:11434/v1/systemone -d '{
-"model": "tev1",
+"model": "tev1:4b",
 "state": "We would like to go to lunch",
 "questions": {
 "label": {
