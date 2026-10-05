@@ -36,7 +36,12 @@ const ACTIONS = new Set(["pause", "resume", "restart"]);
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/v1/systemone";
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "tev1:4b";
 const OLLAMA_TIMEOUT_MS = process.env.OLLAMA_TIMEOUT_MS ? Number(process.env.OLLAMA_TIMEOUT_MS) : 1500;
-const AUTOPLAY_INTERVAL_MS = process.env.AUTOPLAY_INTERVAL_MS ? Number(process.env.AUTOPLAY_INTERVAL_MS) : 400;
+// Minimum gap between the *start* of one decision tick and the next, not
+// added on top of the ollama call itself (see autoplayTick). A small
+// deliberate throttle so autoplay doesn't hammer ollama with literally
+// back-to-back requests; set to 0 for "ask again the instant the previous
+// call finishes", or raise it to throttle further.
+const AUTOPLAY_INTERVAL_MS = process.env.AUTOPLAY_INTERVAL_MS ? Number(process.env.AUTOPLAY_INTERVAL_MS) : 100;
 
 let autoplayEnabled = process.env.AUTOPLAY !== "off";
 let autoplayInfo = { lastDirection: null, lastError: null, lastElapsedMs: null, lastAt: 0 };
@@ -144,6 +149,7 @@ async function callOllama(prompt) {
 }
 
 async function autoplayTick() {
+  const tickStartedAt = Date.now();
   if (autoplayEnabled && latestState) {
     const prompt = buildDecisionPrompt();
     let direction = null, error = null, elapsedMs = null;
@@ -171,7 +177,11 @@ async function autoplayTick() {
       ? `[ollama] call failed after ${elapsedMs}ms: ${error}`
       : `[ollama] -> ${direction} (${elapsedMs}ms)`);
   }
-  setTimeout(autoplayTick, AUTOPLAY_INTERVAL_MS);
+  // Pace ticks AUTOPLAY_INTERVAL_MS apart measured from tick *start*, not
+  // stacked on top of however long the ollama call took — otherwise a
+  // 480ms call turns into a ~880ms gap between moves instead of ~480ms.
+  const nextDelay = Math.max(0, AUTOPLAY_INTERVAL_MS - (Date.now() - tickStartedAt));
+  setTimeout(autoplayTick, nextDelay);
 }
 
 // ---------------------------------------------------------------- server

@@ -968,7 +968,10 @@
     }
   }
 
-  setInterval(syncWithServer, 200);
+  // 80ms keeps this comfortably under one tile-crossing (~185ms at
+  // PAC_SPEED) so a freshly queued direction doesn't sit around waiting to
+  // be picked up.
+  setInterval(syncWithServer, 80);
   syncWithServer();
 })();
 </script>

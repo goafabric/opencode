@@ -21,7 +21,7 @@ Concretely, this lets you:
 
 | File | Role |
 |---|---|
-| `pacman.html` | The game. Unmodified gameplay/rendering, plus a small bridge at the bottom of the script that syncs state to/from `server.js` every 200ms. Keyboard input (arrows/WASD, P, R) is untouched and always works, even if the server is down. |
+| `pacman.html` | The game. Unmodified gameplay/rendering, plus a small bridge at the bottom of the script that syncs state to/from `server.js` every 80ms. Keyboard input (arrows/WASD, P, R) is untouched and always works, even if the server is down. |
 | `server.js` | `node server.js` — serves `pacman.html` at `/`, exposes the HTTP API below, and runs the autoplay loop that asks Ollama for the next move. |
 | `req.md` | The original feature request this was built from. |
 | `../jev.md` | Original `ollama /v1/systemone` "jev" decision-model request/response notes (one directory up, shared with other things under `doc/jev/`). |
@@ -49,7 +49,7 @@ Env vars (all optional):
 | `OLLAMA_URL` | `http://localhost:11434/v1/systemone` | decision-model endpoint |
 | `OLLAMA_MODEL` | `tev1:4b` | model name sent in the request |
 | `OLLAMA_TIMEOUT_MS` | `1500` | abort a stalled ollama call after this long |
-| `AUTOPLAY_INTERVAL_MS` | `400` | how often autoplay asks for the next move |
+| `AUTOPLAY_INTERVAL_MS` | `100` | minimum gap between the *start* of one decision tick and the next (not added on top of the ollama call — see Autoplay loop below). A small deliberate throttle so autoplay doesn't hammer ollama with literally back-to-back requests; set to `0` to ask again the instant the previous call finishes, or raise it to throttle further. |
 | `AUTOPLAY` | (unset = on) | set to `off` to start with autoplay disabled |
 
 ## HTTP API
@@ -78,7 +78,9 @@ curl -X POST http://localhost:8787/api/autoplay -d '{"enabled":false}'
 `pacman.html` can't expose HTTP endpoints by itself (it's just a page), so
 `server.js` sits in between:
 
-1. Every 200ms the page `POST`s its full live state to `/api/sync`.
+1. Every 80ms (comfortably under one tile-crossing, ~185ms at the
+   configured `PAC_SPEED`) the page `POST`s its full live state to
+   `/api/sync`.
 2. The server stores that as `latestState` (what `/api/state` and
    `/api/decision` read from) and replies with any pending direction/action
    commands that were queued via `/api/move`, `/api/control`, or the
@@ -105,6 +107,33 @@ connected:
    `[ollama] -> left (157ms)` or `[ollama] call failed after 1500ms: <reason>`.
 5. If the game reaches `gameover`, queues a `restart` so the demo keeps
    running indefinitely.
+
+Tick pacing is measured from the *start* of a tick, not added on top of the
+ollama call (`nextDelay = max(0, AUTOPLAY_INTERVAL_MS - elapsed)`), so a slow
+ollama response doesn't silently turn a 400ms gap into an 800ms+ one — it
+was doing exactly that before this was fixed.
+
+### Where the end-to-end latency actually comes from
+
+There are two independent "polling" loops; neither one is required to be
+slow, they just both add some delay:
+
+1. **Server -> Ollama (`AUTOPLAY_INTERVAL_MS`, default `100`)**: how often the
+   server *decides* on a new direction. This is a small deliberate throttle
+   on top of the raw Ollama round-trip time (observed ~50-500ms with
+   `tev1:4b` locally, depending on load), so autoplay doesn't fire requests
+   literally back-to-back with zero breathing room. Set to `0` for "ask
+   again the instant the previous call finishes" if you want the absolute
+   minimum latency instead.
+2. **Browser <-> server (`/api/sync`, every 80ms)**: how often the page picks
+   up a freshly queued direction and reports its own state back. This value
+   just needs to stay comfortably below one tile-crossing (~185ms at
+   `PAC_SPEED`) so a queued move isn't stale by the time it's read.
+
+On top of both: Pac-Man can only actually *turn* at a tile-center crossing
+(~185ms at the current speed), so even an instantly-available direction can
+take up to that long to become visible on screen. That part is inherent to
+the tile-based movement model, not the HTTP plumbing.
 
 ### Design decision: no built-in fallback AI
 
