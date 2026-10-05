@@ -204,7 +204,8 @@
     pac = {
       x: spawn.x, y: spawn.y,
       dir: "left", next: "left",
-      mouth: 0, dead: false, deathT: 0
+      mouth: 0, dead: false, deathT: 0,
+      centerX: null, centerY: null // last tile whose arrival was already processed
     };
     ghosts = GHOST_DEFS.map(d => ({
       def: d,
@@ -215,7 +216,8 @@
       eaten: false,
       inHouse: d.name !== "blinky",
       releaseAt: d.release,
-      wobble: Math.random() * 6
+      wobble: Math.random() * 6,
+      centerX: null, centerY: null // last tile whose arrival was already processed
     }));
     frightTimer = 0;
     ghostCombo = 0;
@@ -356,16 +358,26 @@
     if (pac.dead) return;
 
     // Try turning when aligned
+    const pacTileX = Math.round(pac.x), pacTileY = Math.round(pac.y);
     if (atTileCenter(pac)) {
-      // EPS tolerance means this fires slightly before the inner loop's own
-      // exact-arrival check below, every time a tile is crossed — so the
-      // tile-arrival side effects (eating a pellet, tunnel wrap) have to
-      // happen here too, or they get silently skipped every single tile.
-      // eatAt()/wrap() are idempotent, so re-running them below on the same
-      // tile is harmless.
-      snap(pac);
-      wrap(pac);
-      eatAt(pac.x, pac.y);
+      // Arrival side effects (eating a pellet, tunnel wrap) only run once
+      // per newly-reached tile, not every frame merely spent within EPS of
+      // one — otherwise snap() keeps resetting position back to this tile's
+      // exact center every single frame, forever, whenever one frame's
+      // movement is smaller than EPS (speed * dt < EPS). That is exactly
+      // what froze frightened ghosts solid: GHOST_FRIGHT_SPEED is slow
+      // enough that a whole frame's step never escapes the EPS band.
+      if (pac.centerX !== pacTileX || pac.centerY !== pacTileY) {
+        snap(pac);
+        wrap(pac);
+        eatAt(pac.x, pac.y);
+        pac.centerX = Math.round(pac.x);
+        pac.centerY = Math.round(pac.y);
+      }
+      // Turning, in contrast, must be re-checked every frame pac sits at a
+      // center (not just once on arrival) — otherwise a direction queued
+      // while pac is stopped dead against a wall would never take effect,
+      // since "newly-reached tile" never becomes true again while stopped.
       if (pac.next !== pac.dir && canMove(pac.x, pac.y, pac.next, false)) {
         pac.dir = pac.next;
       }
@@ -536,16 +548,26 @@
       g.releaseAt = elapsed + 1.2;
       g.x = HOUSE_DOOR.x;
       g.y = 14;
+      g.centerX = null; g.centerY = null; // force a fresh direction decision on next release
       return;
     }
 
     let dist = speed * dt;
     let guard = 0;
     while (dist > 1e-9 && guard++ < 24) {
-      if (atTileCenter(g)) {
+      const gTileX = Math.round(g.x), gTileY = Math.round(g.y);
+      if (atTileCenter(g) && (g.centerX !== gTileX || g.centerY !== gTileY)) {
+        // Gated on "newly-reached tile", not just "within EPS of one" — see
+        // the long comment in updatePac(). This specifically is what froze
+        // frightened ghosts solid: GHOST_FRIGHT_SPEED is slow enough that a
+        // single frame's movement never exceeds EPS, so re-triggering this
+        // block every frame kept snapping position straight back to the
+        // same tile center before any real progress could accumulate.
         snap(g);
-        wrap(g); // same premature-snap tunnel-edge case as updatePac()
+        wrap(g);
         chooseGhostDir(g);
+        g.centerX = Math.round(g.x);
+        g.centerY = Math.round(g.y);
       }
       const d = DIRS[g.dir];
       const targetX = nextCenter(g.x, d.x);

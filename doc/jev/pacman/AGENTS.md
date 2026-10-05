@@ -113,6 +113,44 @@ ollama call (`nextDelay = max(0, AUTOPLAY_INTERVAL_MS - elapsed)`), so a slow
 ollama response doesn't silently turn a 400ms gap into an 800ms+ one — it
 was doing exactly that before this was fixed.
 
+### Making the decision request actually informative
+
+`tev1:4b` is a small choice-classifier, and its behavior tracks very
+directly with what's in the `criteria` field per choice, *not* just the
+`state` text. Confirmed empirically (`curl`ing ollama directly with hand-
+written prompts): with generic criteria like `{"left": "Move left", "right":
+"Move right"}` the model falls back hard to "keep going whatever direction
+it's already moving", largely ignoring pellet layout, and its confidence on
+genuine ghost-danger cases collapses once the `state` text gets long/noisy
+(observed down to ~0.003, i.e. a coin flip, despite still picking the
+technically-correct side).
+
+So `buildDecisionPrompt()` now does the pellet/ghost analysis itself
+(`describeDirection`, BFS via `exploreFrom`) and puts a concrete, short
+description *per direction* into `criteria`, e.g.:
+
+```
+"left":  "DANGER: blinky is right there, almost certain death"
+"right": "nearest pellet 2 tile(s) away"
+```
+
+instead of `"Move left"` / `"Move right"`. The shared `state` text was
+trimmed to just position/direction/pellet-count — the previous version
+crammed the full ghost list and a 7x7 ASCII maze window in there, which
+turned out to mostly dilute the signal rather than help. Verified this
+meaningfully improved play: pellets are now eaten via fresh routes instead
+of repeatedly retracing already-cleared corridors, and isolated danger
+scenarios are picked correctly with much higher confidence than before.
+
+**Known remaining limitation**: this is still a single-step-ahead decision
+(one BFS from the *next* tile in each direction, re-run every tick) — there
+is no multi-step path planning or lookahead for multiple ghosts converging
+from different sides at once. Pac-Man can still die to a pincer/ambush near
+the ghost-house exit, the same way a purely reactive player might. Fixing
+that would mean deeper search (e.g. simulate a few steps ahead per
+candidate direction), which is a bigger change than the prompt/criteria fix
+done here.
+
 ### Where the end-to-end latency actually comes from
 
 There are two independent "polling" loops; neither one is required to be

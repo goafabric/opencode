@@ -41,7 +41,7 @@ const OLLAMA_TIMEOUT_MS = process.env.OLLAMA_TIMEOUT_MS ? Number(process.env.OLL
 // deliberate throttle so autoplay doesn't hammer ollama with literally
 // back-to-back requests; set to 0 for "ask again the instant the previous
 // call finishes", or raise it to throttle further.
-const AUTOPLAY_INTERVAL_MS = process.env.AUTOPLAY_INTERVAL_MS ? Number(process.env.AUTOPLAY_INTERVAL_MS) : 100;
+const AUTOPLAY_INTERVAL_MS = process.env.AUTOPLAY_INTERVAL_MS ? Number(process.env.AUTOPLAY_INTERVAL_MS) : 10;
 
 let autoplayEnabled = process.env.AUTOPLAY !== "off";
 let autoplayInfo = { lastDirection: null, lastError: null, lastElapsedMs: null, lastAt: 0 };
@@ -83,34 +83,103 @@ function readJsonBody(req) {
   });
 }
 
+const DIR_OFFSETS = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+
+function tileCharAt(gridRows, x, y) {
+  if (y < 0 || y >= gridRows.length) return "#";
+  const row = gridRows[y];
+  if (x < 0 || x >= row.length) return " "; // tunnel wrap
+  return row[x];
+}
+
+// BFS outward from a tile (not crossing walls or the ghost-house door —
+// Pac-Man himself can never cross that either), up to maxDepth steps,
+// looking for the nearest pellet/power-pellet. reachableTiles being tiny
+// flags a dead end with nothing to find.
+function exploreFrom(grid, startX, startY, maxDepth) {
+  const rows = grid.length, cols = grid[0].length;
+  const key = (x, y) => x + "," + y;
+  const visited = new Set([key(startX, startY)]);
+  const queue = [{ x: startX, y: startY, dist: 0 }];
+  let nearestPelletDist = null, nearestPowerDist = null;
+  for (let qi = 0; qi < queue.length; qi++) {
+    const cur = queue[qi];
+    const t = tileCharAt(grid, cur.x, cur.y);
+    if (t === "." && nearestPelletDist === null) nearestPelletDist = cur.dist;
+    if (t === "o" && nearestPowerDist === null) nearestPowerDist = cur.dist;
+    if (cur.dist >= maxDepth) continue;
+    for (const dir of ["up", "down", "left", "right"]) {
+      const off = DIR_OFFSETS[dir];
+      let nx = cur.x + off.x;
+      const ny = cur.y + off.y;
+      if (nx < 0) nx = cols - 1; else if (nx >= cols) nx = 0; // tunnel wrap
+      if (ny < 0 || ny >= rows) continue;
+      const t2 = tileCharAt(grid, nx, ny);
+      if (t2 === "#" || t2 === "-") continue;
+      const k = key(nx, ny);
+      if (visited.has(k)) continue;
+      visited.add(k);
+      queue.push({ x: nx, y: ny, dist: cur.dist + 1 });
+    }
+  }
+  return { nearestPelletDist, nearestPowerDist, reachableTiles: visited.size };
+}
+
+// Builds a short, information-dense description of what taking `dir` leads
+// to. This is the actual signal the decision model compares between
+// choices — a generic "Move left" gives it nothing to discriminate on,
+// which is why it used to just keep going in whatever direction it was
+// already moving regardless of pellets or danger.
+function describeDirection(state, dir) {
+  const { pacman, ghosts, grid } = state;
+  const off = DIR_OFFSETS[dir];
+  const sx = pacman.tileX + off.x, sy = pacman.tileY + off.y;
+
+  let minDangerDist = Infinity, nearestDangerName = null;
+  let minFrightDist = Infinity, nearestFrightName = null;
+  for (const g of ghosts) {
+    const d = Math.max(Math.abs(g.tileX - sx), Math.abs(g.tileY - sy));
+    if (g.dangerous && d < minDangerDist) { minDangerDist = d; nearestDangerName = g.name; }
+    if (g.status === "frightened" && d < minFrightDist) { minFrightDist = d; nearestFrightName = g.name; }
+  }
+
+  const parts = [];
+  if (minDangerDist <= 1) {
+    parts.push(`DANGER: ${nearestDangerName} is right there, almost certain death`);
+  } else if (minDangerDist <= 3) {
+    parts.push(`risky: ${nearestDangerName} (dangerous) is only ${minDangerDist} tile(s) away`);
+  }
+  if (minFrightDist <= 5) {
+    parts.push(`edible ghost ${nearestFrightName} ${minFrightDist} tile(s) away \u2014 chase for bonus points`);
+  }
+
+  const { nearestPelletDist, nearestPowerDist, reachableTiles } = exploreFrom(grid, sx, sy, 10);
+  if (nearestPowerDist !== null) parts.push(`power pellet ${nearestPowerDist} tile(s) away`);
+  if (nearestPelletDist !== null) parts.push(`nearest pellet ${nearestPelletDist} tile(s) away`);
+  else if (reachableTiles <= 3) parts.push("dead end, no pellets reachable this way");
+  else parts.push("no pellets found within range this way");
+
+  return parts.join("; ");
+}
+
 // Builds a request body shaped like the jev / ollama "systemone" examples,
-// ready to be curled straight at a decision model. The model only ever sees
-// currently-legal moves as choice criteria.
+// ready to be curled straight at a decision model. Each legal direction's
+// `criteria` entry is a concrete, per-direction analysis (see
+// describeDirection) rather than a generic label, since that's what the
+// classifier actually compares between choices.
 function buildDecisionPrompt() {
   if (!latestState) return null;
   const s = latestState;
   const legal = s.pacman.legalMoves || [];
-
-  const ghostLines = (s.ghosts || []).map(g => {
-    const tag = g.status === "frightened" ? "EDIBLE"
-      : g.status === "eaten" ? "returning to house (harmless)"
-      : g.status === "in_house" ? "still in house (harmless)"
-      : "DANGEROUS";
-    return `${g.name} at tile (${g.tileX},${g.tileY}), ${tag}, ` +
-      `${g.distanceToPacman.toFixed(1)} tiles away, moving ${g.direction}`;
-  }).join("; ");
+  const dirs = legal.length ? legal : ["up", "down", "left", "right"];
 
   const stateText =
-    `Pac-Man is at tile (${s.pacman.tileX},${s.pacman.tileY}) moving ${s.pacman.direction}. ` +
-    `Game phase: ${s.gameState}. Score ${s.score}, lives ${s.lives}, level ${s.level}, ` +
-    `${s.pelletsRemaining} pellets remaining. ` +
-    `Legal moves right now: ${legal.join(", ") || "none"}. ` +
-    `Ghosts: ${ghostLines || "none"}. ` +
-    `Local 7x7 view centered on Pac-Man (@):\n${(s.surroundings && s.surroundings.rows || []).join("\n")}`;
+    `Pac-Man is at tile (${s.pacman.tileX},${s.pacman.tileY}), currently moving ` +
+    `${s.pacman.direction}. ${s.pelletsRemaining} pellets remain on the board.`;
 
   const criteria = {};
-  for (const dir of (legal.length ? legal : ["up", "down", "left", "right"])) {
-    criteria[dir] = `Move ${dir}`;
+  for (const dir of dirs) {
+    criteria[dir] = describeDirection(s, dir);
   }
 
   return {
@@ -119,8 +188,8 @@ function buildDecisionPrompt() {
     questions: {
       move: {
         type: "choice",
-        instructions: "Which direction should Pac-Man move next? Prefer eating pellets " +
-          "and power pellets, avoid DANGEROUS ghosts, chase EDIBLE ghosts when safe.",
+        instructions: "Pick the direction whose description below is safest and leads to " +
+          "pellets soonest. Never pick a direction marked DANGER unless every option is.",
         criteria
       }
     }
