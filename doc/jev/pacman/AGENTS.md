@@ -101,8 +101,8 @@ connected:
 2. `POST`s it to `OLLAMA_URL` with model `OLLAMA_MODEL`.
 3. Reads `answers.move.choice` from the response and queues it as the next
    move.
-4. Logs one line per tick: `[ollama] -> left` or
-   `[ollama] call failed: <reason>`.
+4. Logs one line per tick, including how long the Ollama call took:
+   `[ollama] -> left (157ms)` or `[ollama] call failed after 1500ms: <reason>`.
 5. If the game reaches `gameover`, queues a `restart` so the demo keeps
    running indefinitely.
 

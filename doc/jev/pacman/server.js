@@ -39,7 +39,7 @@ const OLLAMA_TIMEOUT_MS = process.env.OLLAMA_TIMEOUT_MS ? Number(process.env.OLL
 const AUTOPLAY_INTERVAL_MS = process.env.AUTOPLAY_INTERVAL_MS ? Number(process.env.AUTOPLAY_INTERVAL_MS) : 400;
 
 let autoplayEnabled = process.env.AUTOPLAY !== "off";
-let autoplayInfo = { lastDirection: null, lastError: null, lastAt: 0 };
+let autoplayInfo = { lastDirection: null, lastError: null, lastElapsedMs: null, lastAt: 0 };
 
 // ---------------------------------------------------------------- state
 let latestState = null;      // last snapshot pushed by the browser via /api/sync
@@ -146,13 +146,17 @@ async function callOllama(prompt) {
 async function autoplayTick() {
   if (autoplayEnabled && latestState) {
     const prompt = buildDecisionPrompt();
-    let direction = null, error = null;
+    let direction = null, error = null, elapsedMs = null;
 
     if (prompt) {
+      console.log("[ollama] calling jev...");
+      const startedAt = Date.now();
       try {
         direction = await callOllama(prompt);
       } catch (err) {
         error = String((err && err.message) || err);
+      } finally {
+        elapsedMs = Date.now() - startedAt;
       }
     }
 
@@ -161,9 +165,11 @@ async function autoplayTick() {
       pendingActions.push("restart"); // keep the self-play demo going indefinitely
     }
 
-    autoplayInfo = { lastDirection: direction, lastError: error, lastAt: Date.now() };
-    // One line per move: ollama was called, and what came back.
-    console.log(error ? `[ollama] call failed: ${error}` : `[ollama] -> ${direction}`);
+    autoplayInfo = { lastDirection: direction, lastError: error, lastElapsedMs: elapsedMs, lastAt: Date.now() };
+    // One line per move: ollama was called, how long it took, and what came back.
+    console.log(error
+      ? `[ollama] call failed after ${elapsedMs}ms: ${error}`
+      : `[ollama] -> ${direction} (${elapsedMs}ms)`);
   }
   setTimeout(autoplayTick, AUTOPLAY_INTERVAL_MS);
 }
