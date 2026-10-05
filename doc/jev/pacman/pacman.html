@@ -41,6 +41,25 @@
     font-size: 12px;
     color: #777;
   }
+  #apiStatus {
+    margin-top: 2px;
+    font-size: 11px;
+    color: #4a4;
+  }
+  #autoplayBtn {
+    margin-left: 8px;
+    font: inherit;
+    font-size: 11px;
+    background: #111;
+    color: #ccc;
+    border: 1px solid #444;
+    border-radius: 3px;
+    padding: 1px 6px;
+    cursor: pointer;
+  }
+  #autoplayBtn:hover {
+    border-color: #888;
+  }
 </style>
 </head>
 <body>
@@ -52,6 +71,7 @@
 <canvas id="game"></canvas>
 <div id="msg"></div>
 <div id="help">Arrow keys / WASD to move &middot; P to pause &middot; R to restart</div>
+<div id="apiStatus">API: connecting&hellip; <button id="autoplayBtn" type="button">Autoplay: &hellip;</button></div>
 
 <script>
 (() => {
@@ -287,14 +307,26 @@
     else if (e.x > COLS) e.x = -1;
   }
 
+  // The next tile center in the direction of travel. Using Math.round() of
+  // the *current* (possibly mid-transit) position here would flip the
+  // target one step early as soon as the entity crosses the halfway point
+  // between two tiles, so the entity would approach forever but never
+  // actually arrive. Rounding away from the direction of travel keeps the
+  // target fixed for the whole transition instead.
+  function nextCenter(pos, d) {
+    if (d > 0) return Math.floor(pos) + 1;
+    if (d < 0) return Math.ceil(pos) - 1;
+    return Math.round(pos);
+  }
+
   function moveEntity(e, dist, allowDoor) {
     let remaining = dist;
     let guard = 0;
     while (remaining > 1e-9 && guard++ < 64) {
       const d = DIRS[e.dir];
       // distance to next tile center
-      const targetX = Math.round(e.x) + (d.x !== 0 ? d.x : 0);
-      const targetY = Math.round(e.y) + (d.y !== 0 ? d.y : 0);
+      const targetX = nextCenter(e.x, d.x);
+      const targetY = nextCenter(e.y, d.y);
       const distToCenter = d.x !== 0
         ? Math.abs(targetX - e.x)
         : Math.abs(targetY - e.y);
@@ -325,7 +357,15 @@
 
     // Try turning when aligned
     if (atTileCenter(pac)) {
+      // EPS tolerance means this fires slightly before the inner loop's own
+      // exact-arrival check below, every time a tile is crossed — so the
+      // tile-arrival side effects (eating a pellet, tunnel wrap) have to
+      // happen here too, or they get silently skipped every single tile.
+      // eatAt()/wrap() are idempotent, so re-running them below on the same
+      // tile is harmless.
       snap(pac);
+      wrap(pac);
+      eatAt(pac.x, pac.y);
       if (pac.next !== pac.dir && canMove(pac.x, pac.y, pac.next, false)) {
         pac.dir = pac.next;
       }
@@ -338,8 +378,8 @@
     while (dist > 1e-9 && guard++ < 16) {
       const before = dist;
       const d = DIRS[pac.dir];
-      const targetX = Math.round(pac.x) + d.x;
-      const targetY = Math.round(pac.y) + d.y;
+      const targetX = nextCenter(pac.x, d.x);
+      const targetY = nextCenter(pac.y, d.y);
       const toCenter = d.x !== 0 ? Math.abs(targetX - pac.x) : Math.abs(targetY - pac.y);
 
       if (atTileCenter(pac) && !canMove(pac.x, pac.y, pac.dir, false)) {
@@ -504,11 +544,12 @@
     while (dist > 1e-9 && guard++ < 24) {
       if (atTileCenter(g)) {
         snap(g);
+        wrap(g); // same premature-snap tunnel-edge case as updatePac()
         chooseGhostDir(g);
       }
       const d = DIRS[g.dir];
-      const targetX = Math.round(g.x) + d.x;
-      const targetY = Math.round(g.y) + d.y;
+      const targetX = nextCenter(g.x, d.x);
+      const targetY = nextCenter(g.y, d.y);
       const toCenter = d.x !== 0 ? Math.abs(targetX - g.x) : Math.abs(targetY - g.y);
       const step = Math.min(dist, toCenter);
       g.x += d.x * step;
@@ -768,6 +809,167 @@
 
   newGame();
   requestAnimationFrame(frame);
+
+  // ------------------------------------------------------- external control
+  // Bridges this page to the tiny Node server in server.js so the game can
+  // also be queried/driven over plain HTTP (curl, a jev-style decision
+  // model, etc.) while keyboard control keeps working unchanged.
+  const DIR_LIST = ["up", "down", "left", "right"];
+  const apiStatusEl = document.getElementById("apiStatus");
+  const autoplayBtn = document.getElementById("autoplayBtn");
+  let autoplayDesired = null; // tracks last known server-side autoplay.enabled
+
+  autoplayBtn.addEventListener("click", async e => {
+    e.preventDefault();
+    const next = !(autoplayDesired !== false); // default to "turn off" once we know current state
+    try {
+      const res = await fetch("/api/autoplay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: next })
+      });
+      const json = await res.json();
+      autoplayDesired = json.enabled;
+      autoplayBtn.textContent = "Autoplay: " + (autoplayDesired ? "ON" : "OFF");
+    } catch (err) { /* ignore, next sync will reconcile */ }
+  });
+
+  function computeLegalMoves() {
+    return DIR_LIST.filter(d => canMove(pac.x, pac.y, d, false));
+  }
+
+  function ghostStatus(g) {
+    if (g.eaten) return "eaten";
+    if (g.inHouse) return "in_house";
+    if (g.frightened) return "frightened";
+    return g.mode === "scatter" ? "scatter" : "chasing";
+  }
+
+  function buildGhostsInfo() {
+    return ghosts.map(g => {
+      const status = ghostStatus(g);
+      const dx = g.x - pac.x, dy = g.y - pac.y;
+      return {
+        name: g.def.name,
+        x: g.x, y: g.y,
+        tileX: Math.round(g.x), tileY: Math.round(g.y),
+        direction: g.dir,
+        status,
+        dangerous: status === "chasing" || status === "scatter",
+        distanceToPacman: Math.round(Math.sqrt(dx * dx + dy * dy) * 100) / 100,
+        deltaTile: { dx: Math.round(g.x) - Math.round(pac.x), dy: Math.round(g.y) - Math.round(pac.y) }
+      };
+    });
+  }
+
+  // Textual window centered on Pac-Man. '@' pacman, '#' wall, '.' pellet,
+  // 'o' power pellet, ' ' empty/tunnel, '-' ghost door. Ghost overlays:
+  // uppercase initial (B/P/I/C) = dangerous, lowercase = frightened/edible,
+  // '*' = still in house (harmless), '+' = eaten, returning as eyes.
+  function buildSurroundings(radius) {
+    const cx = Math.round(pac.x), cy = Math.round(pac.y);
+    const rows = [];
+    for (let dy = -radius; dy <= radius; dy++) {
+      let row = "";
+      for (let dx = -radius; dx <= radius; dx++) {
+        const x = cx + dx, y = cy + dy;
+        if (dx === 0 && dy === 0) { row += "@"; continue; }
+        let ghostChar = null;
+        for (const g of ghosts) {
+          if (Math.round(g.x) === x && Math.round(g.y) === y) {
+            const initial = g.def.name[0];
+            if (g.eaten) ghostChar = "+";
+            else if (g.inHouse) ghostChar = "*";
+            else if (g.frightened) ghostChar = initial.toLowerCase();
+            else ghostChar = initial.toUpperCase();
+            break;
+          }
+        }
+        row += ghostChar || tileAt(x, y);
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  let syncTick = 0;
+  function buildStatePayload() {
+    syncTick++;
+    return {
+      ts: Date.now(),
+      tick: syncTick,
+      gameState: state,
+      score, lives, level,
+      pelletsRemaining: pellets,
+      pacman: {
+        x: pac.x, y: pac.y,
+        tileX: Math.round(pac.x), tileY: Math.round(pac.y),
+        direction: pac.dir,
+        nextDirection: pac.next,
+        legalMoves: computeLegalMoves()
+      },
+      ghosts: buildGhostsInfo(),
+      surroundings: {
+        radius: 3,
+        legend: {
+          "@": "pacman", "#": "wall", ".": "pellet", "o": "power pellet",
+          " ": "empty/tunnel", "-": "ghost door",
+          "uppercase letter (B/P/I/C)": "dangerous ghost (blinky/pinky/inky/clyde)",
+          "lowercase letter (b/p/i/c)": "frightened/edible ghost",
+          "*": "ghost still in house (harmless)",
+          "+": "eaten ghost returning as eyes (harmless)"
+        },
+        rows: buildSurroundings(3)
+      },
+      grid: grid.map(row => row.join(""))
+    };
+  }
+
+  function applyRemoteCommands(cmd) {
+    if (!cmd) return;
+    if (cmd.direction && DIRS[cmd.direction]) {
+      pac.next = cmd.direction;
+    }
+    if (Array.isArray(cmd.actions)) {
+      for (const action of cmd.actions) {
+        if (action === "restart") {
+          newGame();
+        } else if (action === "pause" && state === "play") {
+          state = "paused"; msgEl.textContent = "PAUSED"; msgEl.style.color = "#8888ff";
+        } else if (action === "resume" && state === "paused") {
+          state = "play"; msgEl.textContent = "";
+        }
+      }
+    }
+  }
+
+  function describeAutoplay(ap) {
+    if (!ap || !ap.enabled) return "Autoplay: OFF";
+    return ap.error ? "Autoplay: ON (ollama unreachable)" : "Autoplay: ON (ollama)";
+  }
+
+  async function syncWithServer() {
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildStatePayload())
+      });
+      if (!res.ok) throw new Error("bad status " + res.status);
+      const cmd = await res.json();
+      applyRemoteCommands(cmd);
+      autoplayDesired = cmd.autoplay ? cmd.autoplay.enabled : autoplayDesired;
+      autoplayBtn.textContent = describeAutoplay(cmd.autoplay);
+      if (apiStatusEl.firstChild) apiStatusEl.firstChild.textContent = "API: linked ";
+      apiStatusEl.style.color = "#4a4";
+    } catch (err) {
+      if (apiStatusEl.firstChild) apiStatusEl.firstChild.textContent = "API: offline (keyboard still works) ";
+      apiStatusEl.style.color = "#a44";
+    }
+  }
+
+  setInterval(syncWithServer, 200);
+  syncWithServer();
 })();
 </script>
 </body>
