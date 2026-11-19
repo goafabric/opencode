@@ -1,0 +1,39 @@
+version: 16
+
+# OpenAI-compatible provider whose base URL comes from the environment
+# (here OPENAI_BASE_URL=https://openrouter.ai/api/v1), authenticated with
+# OPENAI_API_KEY. Swap the env vars to point at any OpenAI-compatible endpoint.
+providers:
+  openai-env:
+    provider: openai
+    base_url: ${env.OPENAI_BASE_URL}
+    token_key: OPENAI_API_KEY
+
+models:
+  deepseek:
+    provider: openai-env
+#    model: deepseek/deepseek-v4.1-flash
+    model: ${env.OPENAI_CHAT_MODEL}
+agents:
+  root:
+    model: deepseek
+    description: Bug investigator
+    instruction: |
+      Analyze error messages, stack traces, and code to find bug root causes.
+      Explain what's wrong and why it's happening.
+      Delegate fix implementation to the fixer agent.
+    sub_agents: [fixer]
+    toolsets:
+      - type: filesystem
+      - type: mcp
+        ref: docker:duckduckgo
+
+  fixer:
+    model: deepseek
+    description: Fix implementer
+    instruction: |
+      Write fixes for bugs diagnosed by the investigator.
+      Make minimal, targeted changes and add tests to prevent regression.
+    toolsets:
+      - type: filesystem
+      - type: shell
